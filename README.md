@@ -1,5 +1,8 @@
 # CmdPal.Extension.Shortcuts
 
+[![CI](https://github.com/xxthunder/CmdPal.Extension.Shortcuts/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/xxthunder/CmdPal.Extension.Shortcuts/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/xxthunder/CmdPal.Extension.Shortcuts/branch/develop/graph/badge.svg)](https://codecov.io/gh/xxthunder/CmdPal.Extension.Shortcuts)
+
 A [PowerToys Command Palette](https://learn.microsoft.com/windows/powertoys/command-palette/overview)
 extension that catalogues folders of your choice into the main search — the files in them,
 filtered by extension, as top-level commands that Command Palette ranks by how often and how
@@ -68,38 +71,32 @@ Once per machine, in PowerShell 7:
 5. **GitHub CLI**: `winget install GitHub.cli`, then `gh auth login` — to check out a pull
    request for its UAT.
 
-## Building and testing on Windows
+## Building and testing
 
-From the repository root:
+From the repository root, with the .NET 10 SDK:
 
-```powershell
-dotnet build tools/catalog.cs
-dotnet test tests/FoldersCatalog.Tests/FoldersCatalog.Tests.csproj
-dotnet test tests/CmdPal.Extension.Shortcuts.Tests/CmdPal.Extension.Shortcuts.Tests.csproj -p:Platform=x64
-dotnet build src/CmdPal.Extension.Shortcuts/CmdPal.Extension.Shortcuts.csproj -c Release -p:Platform=x64
+```
+dotnet run build.cs -- check
 ```
 
-## Trying a development build
+It runs every check: the library's build and tests with coverage on every system, and on
+Windows also the extension's tests and its Release build. Elsewhere it prints that it skipped
+the extension's part. `scripts/gate` runs the same in the .NET SDK container, so no local SDK
+is needed.
 
-Register the build, then restart Command Palette: exit PowerToys from the tray and start it
-again. Stopping the extension while Command Palette runs can leave stale state, and the extension
-then loads no commands.
+## UAT and trying a development build
 
-```powershell
-dotnet build src/CmdPal.Extension.Shortcuts/CmdPal.Extension.Shortcuts.csproj -p:Platform=x64
-Add-AppxPackage -Register (Resolve-Path "src\CmdPal.Extension.Shortcuts\bin\x64\Debug\net10.0-windows10.0.26100.0\win-x64\AppxManifest.xml")
-```
-
-A registered development build runs in place from that `bin` folder, so Command Palette's
-extension process holds its files. Before each rebuild, stop it, and restart Command Palette
-(exit PowerToys from the tray and start it again) after the build:
+On Windows, in PowerShell 7, check out the branch (or pull request) and deploy it:
 
 ```powershell
-Stop-Process -Name CmdPal.Extension.Shortcuts -ErrorAction SilentlyContinue
-dotnet build src/CmdPal.Extension.Shortcuts/CmdPal.Extension.Shortcuts.csproj -p:Platform=x64
+gh pr checkout <n>
+.\uat.ps1
 ```
 
-Register again only when `Package.appxmanifest` changed. Remove it with
+Then run the item's own checks. `uat.ps1` stops the running extension and PowerToys, builds the
+extension through `build.cs`, registers its `AppxManifest.xml` and starts PowerToys again. A
+registered development build runs in place from its `bin` folder, which is why the extension must
+be stopped before each build. Remove it with
 `Get-AppxPackage CmdPal.Extension.Shortcuts | Remove-AppxPackage`.
 
 ## License

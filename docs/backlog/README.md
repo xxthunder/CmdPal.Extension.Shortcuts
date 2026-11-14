@@ -23,11 +23,11 @@
 - [CPS-002d — A file added to a catalogued folder appears without a restart](cps-002d.md)
 
 ### In Progress
-- [CPS-012 — A script's earlier arguments are offered again](cps-012.md)
 - [CPS-002 — Folders of your choice appear in the Command Palette main search](cps-002.md)
 - [CPS-001 — Backlog refinement](cps-001.md)
 
 ### Done
+- [CPS-012 — A script's earlier arguments are offered again](cps-012.md)
 - [CPS-009 — A script takes arguments from the main search](cps-009.md)
 - [CPS-006 — Folders whose names start with a dot are left out unless named](cps-006.md)
 - [CPS-005 — The extension shows its own icon](cps-005.md)

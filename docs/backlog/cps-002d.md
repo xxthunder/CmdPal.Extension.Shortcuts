@@ -21,6 +21,14 @@ there with a fake clock.
   ancestor cannot be traversed (`UnauthorizedAccessException`). Watcher-driven rebuilds meet
   both — a rebuild must not end the catalogue on them.
 
+**Scope Decisions**:
+
+- 2026-11-15 (final review): Folders missing at start are not watched until the settings change or Command Palette restarts; a watched folder that is deleted stops being watched the same way.
+- 2026-11-15 (final review): Linked subfolders below a `\**` pattern are not watched: Windows' FileSystemWatcher does not descend into reparse points; follow-up CPS-014.
+- 2026-11-15 (final review): The debounce is built on `TimeProvider` (about 50 lines, tested with FakeTimeProvider) rather than taken from Rx `Throttle`: System.Reactive would be a heavy dependency for one operator in an AOT-compatible library.
+- 2026-11-15 (final review): The quiet time is 500 ms.
+- 2026-11-15 (final review): A file created between a catalogue walk and the start of its watcher (milliseconds, at start and on a settings change) appears with the next change in that tree.
+
 **Acceptance Criteria**:
 - [ ] A burst of change events leads to one rebuild after the quiet time, with tests
 - [ ] A file created in a catalogued folder appears in the main search without a restart of Command Palette

@@ -16,6 +16,7 @@ where [xxthunder/shortcuts](https://github.com/xxthunder/shortcuts), a keyboard-
 and automation toolkit for Windows, installs itself and its scripts. By default the extension catalogues
 `%USERPROFILE%\shortcuts\**` and `%USERPROFILE%\shortcuts_private\**` with those six
 extensions; both are settings.
+New, deleted and renamed files show up in the search without a restart. Files in a linked subfolder (a junction or symbolic link below a pattern) still need a restart; see CPS-014.
 
 Formerly called CmdPal.Extension.Folders.
 

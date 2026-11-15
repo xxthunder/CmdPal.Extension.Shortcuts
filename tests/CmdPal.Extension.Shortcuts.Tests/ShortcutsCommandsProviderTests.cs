@@ -223,6 +223,55 @@ public sealed class ShortcutsCommandsProviderTests : IDisposable
         Assert.Equal(path + "#arguments", page.Id);
     }
 
+    private static async Task<bool> EventuallyAsync(Func<bool> condition)
+    {
+        var deadline = DateTime.UtcNow.AddSeconds(5);
+        while (DateTime.UtcNow < deadline)
+        {
+            if (condition())
+            {
+                return true;
+            }
+
+            await Task.Delay(50);
+        }
+
+        return condition();
+    }
+
+    [Fact]
+    public async Task NewFile_AppearsWithoutRestart()
+    {
+        var provider = new ShortcutsCommandsProvider(
+            Manager(P("**")),
+            history: NewHistory(),
+            rebuildQuiet: TimeSpan.FromMilliseconds(50));
+        var raised = 0;
+        provider.ItemsChanged += (_, _) => Interlocked.Increment(ref raised);
+
+        Touch("new.cmd");
+
+        var appeared = await EventuallyAsync(() => provider.TopLevelCommands().Any(i => i.Title == "new"));
+        Assert.True(appeared, "new.cmd did not appear within 5 s");
+        Assert.True(await EventuallyAsync(() => Volatile.Read(ref raised) >= 1), "ItemsChanged was not raised within 5 s");
+    }
+
+    [Fact]
+    public async Task DeletedFile_Disappears()
+    {
+        var old = Touch("old.cmd");
+        var provider = new ShortcutsCommandsProvider(
+            Manager(P("**")),
+            history: NewHistory(),
+            rebuildQuiet: TimeSpan.FromMilliseconds(50));
+        Assert.Contains(provider.TopLevelCommands(), i => i.Title == "old");
+
+        File.Delete(old);
+
+        var gone = await EventuallyAsync(() => provider.TopLevelCommands().All(i => i.Title != "old"));
+        Assert.True(gone, "old.cmd was still listed after 5 s");
+    }
+
     private ArgumentHistory NewHistory() =>
         new(Path.Combine(_root, "history-" + Guid.NewGuid().ToString("N") + ".json"));
 

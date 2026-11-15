@@ -12,8 +12,7 @@ public sealed class SettingsManagerTests : IDisposable
 
     public void Dispose() => Directory.Delete(_root, recursive: true);
 
-    private static readonly string[] DefaultPatterns =
-        [@"%USERPROFILE%\shortcuts\**", @"%USERPROFILE%\shortcuts_private\**"];
+    private static readonly string[] DefaultPatterns = [@"%USERPROFILE%\shortcuts\**"];
 
     private static readonly string[] DefaultExtensions = [".url", ".lnk", ".cmd", ".bat", ".ps1", ".exe"];
 

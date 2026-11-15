@@ -109,7 +109,7 @@ public sealed class ShortcutsCommandsProviderTests : IDisposable
 
         var provider = new ShortcutsCommandsProvider(manager, history: NewHistory());
 
-        Assert.Empty(provider.TopLevelCommands());
+        Assert.Equal(HintTitle, Assert.Single(provider.TopLevelCommands()).Title);
     }
 
     [Fact]
@@ -120,7 +120,7 @@ public sealed class ShortcutsCommandsProviderTests : IDisposable
 
         var provider = new ShortcutsCommandsProvider(manager, history: NewHistory());
 
-        Assert.Empty(provider.TopLevelCommands());
+        Assert.Equal(HintTitle, Assert.Single(provider.TopLevelCommands()).Title);
     }
 
     [Fact]
@@ -176,7 +176,7 @@ public sealed class ShortcutsCommandsProviderTests : IDisposable
     {
         var items = Items(P("nope", "**"));
 
-        Assert.Empty(items);
+        Assert.Equal(HintTitle, Assert.Single(items).Title);
     }
 
     [Theory]
@@ -270,6 +270,118 @@ public sealed class ShortcutsCommandsProviderTests : IDisposable
 
         var gone = await EventuallyAsync(() => provider.TopLevelCommands().All(i => i.Title != "old"));
         Assert.True(gone, "old.cmd was still listed after 5 s");
+    }
+
+    private const string HintTitle = "Shortcuts: no files found, choose your folders";
+
+    private const string OfferTitle = "Shortcuts: create example folder";
+
+    private ShortcutsCommandsProvider ExampleProvider(string patterns, string exampleFolder, string extensions = ".cmd .ps1 .lnk") =>
+        new(
+            Manager(patterns, extensions),
+            history: NewHistory(),
+            rebuildQuiet: TimeSpan.FromMilliseconds(50),
+            exampleFolder: exampleFolder);
+
+    [Fact]
+    public void EmptyCatalog_ShowsHintOnly_WhenExamplesNotOffered()
+    {
+        var empty = P("empty");
+        Directory.CreateDirectory(empty);
+        var provider = ExampleProvider(Path.Combine(empty, "**"), P("examples"));
+
+        var item = Assert.Single(provider.TopLevelCommands());
+
+        Assert.Equal(HintTitle, item.Title);
+    }
+
+    [Fact]
+    public void EmptyCatalog_OffersExamples_WhenTheirFolderIsConfigured()
+    {
+        var folder = P("examples");
+        var provider = ExampleProvider(Path.Combine(folder, "**"), folder);
+
+        var items = provider.TopLevelCommands();
+
+        Assert.Equal([HintTitle, OfferTitle], items.Select(i => i.Title).ToArray());
+        var settings = Assert.IsAssignableFrom<ICommandSettings>(provider.Settings);
+        // The toolkit builds a new settings page on every read, so compare the type.
+        Assert.IsType(settings.SettingsPage.GetType(), items[0].Command);
+        Assert.IsType<CreateExamplesCommand>(items[1].Command);
+    }
+
+    [Fact]
+    public void EmptyCatalog_EveryTitleStartsWithTheExtensionName()
+    {
+        // Command Palette's empty search does not surface them: a user finds them by typing "Shortcuts".
+        var folder = P("examples");
+        var provider = ExampleProvider(Path.Combine(folder, "**"), folder);
+
+        var items = provider.TopLevelCommands();
+
+        Assert.Equal(2, items.Length);
+        Assert.All(items, i => Assert.StartsWith("Shortcuts: ", i.Title, StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task Hint_DisappearsWhenAFileAppears()
+    {
+        var empty = P("empty");
+        Directory.CreateDirectory(empty);
+        var provider = ExampleProvider(Path.Combine(empty, "**"), P("examples"));
+        Assert.Equal(HintTitle, Assert.Single(provider.TopLevelCommands()).Title);
+
+        Touch("empty", "a.cmd");
+
+        var listed = await EventuallyAsync(() => provider.TopLevelCommands().Select(i => i.Title).SequenceEqual(["a"]));
+        Assert.True(listed, "the list was not just 'a' within 5 s");
+    }
+
+    [Fact]
+    public async Task CreateExamples_FilesAppear()
+    {
+        var folder = P("examples");
+        var provider = ExampleProvider(Path.Combine(folder, "**"), folder);
+
+        var offer = Assert.IsAssignableFrom<IInvokableCommand>(provider.TopLevelCommands()[1].Command);
+        offer.Invoke(null!);
+
+        var listed = await EventuallyAsync(() =>
+            provider.TopLevelCommands().Select(i => i.Title).SequenceEqual(["Hello", "Hello", "Open shortcuts folder"]));
+        Assert.True(listed, "the example entries did not appear within 5 s");
+        Assert.True(File.Exists(Path.Combine(folder, ExampleFolder.HelloCmd)));
+        Assert.True(File.Exists(Path.Combine(folder, ExampleFolder.HelloPs1)));
+        Assert.True(File.Exists(Path.Combine(folder, ExampleFolder.FolderShortcut)));
+    }
+
+    [Fact]
+    public void CreateExamples_KeepsExistingFiles()
+    {
+        var folder = P("examples");
+        Directory.CreateDirectory(folder);
+        var hello = Path.Combine(folder, ExampleFolder.HelloCmd);
+        var notes = Path.Combine(folder, "notes.txt");
+        File.WriteAllText(hello, "mine");
+        File.WriteAllText(notes, "my notes");
+        var provider = ExampleProvider(Path.Combine(folder, "**"), folder, ".xyz");
+
+        var items = provider.TopLevelCommands();
+        var offer = Assert.IsAssignableFrom<IInvokableCommand>(items.Single(i => i.Title == OfferTitle).Command);
+        offer.Invoke(null!);
+
+        Assert.Equal("mine", File.ReadAllText(hello));
+        Assert.Equal("my notes", File.ReadAllText(notes));
+    }
+
+    [Fact]
+    public void Provider_CreatesNoFolderByItself()
+    {
+        var folder = P("examples");
+
+        var provider = ExampleProvider(Path.Combine(folder, "**"), folder);
+        _ = provider.TopLevelCommands();
+
+        Assert.False(Directory.Exists(folder));
     }
 
     private ArgumentHistory NewHistory() =>

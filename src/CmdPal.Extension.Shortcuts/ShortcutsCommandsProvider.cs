@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -14,6 +15,11 @@ namespace CmdPal.Extension.Shortcuts;
 
 public sealed partial class ShortcutsCommandsProvider : CommandProvider
 {
+    // Both titles start with the extension's name: Command Palette's empty search does not surface them, typing "Shortcuts" does.
+    public const string HintTitle = "Shortcuts: no files found, choose your folders";
+
+    public const string OfferTitle = "Shortcuts: create example folder";
+
     private readonly SettingsManager _settings;
 
     private readonly Func<LaunchSpec, bool> _startScript;
@@ -21,6 +27,8 @@ public sealed partial class ShortcutsCommandsProvider : CommandProvider
     private readonly ArgumentHistory _history;
 
     private readonly TimeSpan _rebuildQuiet;
+
+    private readonly string _exampleFolder;
 
     // Guards only the swap of the watcher; Reload never takes it, so a SettingsChanged thread that
     // disposes the old watcher (and waits for a running Reload) cannot deadlock with it.
@@ -35,7 +43,7 @@ public sealed partial class ShortcutsCommandsProvider : CommandProvider
     {
     }
 
-    public ShortcutsCommandsProvider(SettingsManager settings, Func<LaunchSpec, bool>? startScript = null, ArgumentHistory? history = null, TimeSpan? rebuildQuiet = null)
+    public ShortcutsCommandsProvider(SettingsManager settings, Func<LaunchSpec, bool>? startScript = null, ArgumentHistory? history = null, TimeSpan? rebuildQuiet = null, string? exampleFolder = null)
     {
         _settings = settings;
         _startScript = startScript ?? StartProcess;
@@ -44,6 +52,7 @@ public sealed partial class ShortcutsCommandsProvider : CommandProvider
         Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.png");
         Settings = settings.Settings;
         _rebuildQuiet = rebuildQuiet ?? TimeSpan.FromMilliseconds(500);
+        _exampleFolder = exampleFolder ?? ExampleFolder.DefaultFolder;
         _commands = BuildCommands();
         _watcher = NewWatcher();
         settings.Settings.SettingsChanged += (_, _) => OnSettingsChanged();
@@ -52,7 +61,10 @@ public sealed partial class ShortcutsCommandsProvider : CommandProvider
     private CatalogWatcher NewWatcher() =>
         new(_settings.Patterns, _rebuildQuiet, Reload);
 
-    private void OnSettingsChanged()
+    private void OnSettingsChanged() => Rewatch();
+
+    // Dispose the watcher, rebuild, start a new watcher: after a settings change and after the example folder was created.
+    private void Rewatch()
     {
         lock (_watcherLock)
         {
@@ -102,10 +114,35 @@ public sealed partial class ShortcutsCommandsProvider : CommandProvider
         return process != null;
     }
 
-    private ICommandItem[] BuildCommands() =>
-        Catalog.Build(_settings.Patterns, _settings.Extensions)
+    private ICommandItem[] BuildCommands()
+    {
+        var items = Catalog.Build(_settings.Patterns, _settings.Extensions)
             .Select(ToItem)
             .ToArray();
+        return items.Length > 0 ? items : EmptyCatalogItems();
+    }
+
+    private ICommandItem[] EmptyCatalogItems()
+    {
+        var items = new List<ICommandItem>
+        {
+            new CommandItem(_settings.Settings.SettingsPage)
+            {
+                Title = HintTitle,
+                Subtitle = "Open the settings to add the folders to catalogue",
+            },
+        };
+        if (ExampleFolder.IsOffered(_settings.Patterns, _exampleFolder))
+        {
+            items.Add(new CommandItem(new CreateExamplesCommand(_exampleFolder, Rewatch))
+            {
+                Title = OfferTitle,
+                Subtitle = _exampleFolder,
+            });
+        }
+
+        return items.ToArray();
+    }
 
     private ICommandItem ToItem(CatalogEntry entry)
     {

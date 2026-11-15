@@ -17,7 +17,7 @@ public sealed partial class SettingsManager : JsonSettingsManager
 
     public const string ExtensionsKey = Namespace + ".Extensions";
 
-    public const string DefaultPatterns = "%USERPROFILE%\\shortcuts\\**\n%USERPROFILE%\\shortcuts_private\\**";
+    public const string DefaultPatterns = "%USERPROFILE%\\shortcuts\\**";
 
     public const string DefaultExtensions = ".url .lnk .cmd .bat .ps1 .exe";
 

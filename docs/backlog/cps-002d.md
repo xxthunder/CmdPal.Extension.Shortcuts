@@ -1,6 +1,6 @@
 # [CPS-002d] A file added to a catalogued folder appears without a restart
 
-**Status**: Open
+**Status**: In Progress
 **Priority**: Medium
 **Component**: `src/FoldersCatalog/`, `src/CmdPal.Extension.Shortcuts/`
 

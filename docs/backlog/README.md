@@ -18,10 +18,10 @@
 - [CPS-008b — The catalogue's rules are requirements, linked to their tests](cps-008b.md)
 - [CPS-008a — A Sphinx documentation with sphinx-needs builds in CI](cps-008a.md)
 - [CPS-008 — Requirements and traceability with sphinx-needs, sphinx-codelinks and ubCode](cps-008.md)
-- [CPS-002d — A file added to a catalogued folder appears without a restart](cps-002d.md)
 
 ### In Progress
 - [CPS-013 — One build harness for gate, CI and UAT, with badges in the README](cps-013.md)
+- [CPS-002d — A file added to a catalogued folder appears without a restart](cps-002d.md)
 - [CPS-002 — Folders of your choice appear in the Command Palette main search](cps-002.md)
 - [CPS-001 — Backlog refinement](cps-001.md)
 

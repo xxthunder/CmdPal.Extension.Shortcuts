@@ -3,7 +3,7 @@ namespace FoldersCatalog;
 /// <summary>Builds the catalogue: the files of the given folder patterns that have one of the given extensions; folders whose names start with a dot are skipped below a pattern root.</summary>
 public static class Catalog
 {
-    private static readonly StringComparer PathComparer =
+    internal static readonly StringComparer PathComparer =
         OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
 
     public static IReadOnlyList<CatalogEntry> Build(IEnumerable<string> patterns, IEnumerable<string> extensions)

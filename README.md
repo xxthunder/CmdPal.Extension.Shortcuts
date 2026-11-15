@@ -14,13 +14,28 @@ desktop and `PATH`.
 (`.lnk`, `.url`) and programs (`.exe`), kept in folders of your own — such as `~\shortcuts`,
 where [xxthunder/shortcuts](https://github.com/xxthunder/shortcuts), a keyboard-driven launcher
 and automation toolkit for Windows, installs itself and its scripts. By default the extension catalogues
-`%USERPROFILE%\shortcuts\**` and `%USERPROFILE%\shortcuts_private\**` with those six
-extensions; both are settings.
+`%USERPROFILE%\shortcuts\**` with those six extensions; both are settings
+(see [Choosing your folders](#choosing-your-folders)).
 New, deleted and renamed files show up in the search without a restart. Files in a linked subfolder (a junction or symbolic link below a pattern) still need a restart; see CPS-014.
 
 Formerly called CmdPal.Extension.Folders.
 
 Status: in development — see the [backlog](docs/backlog/README.md).
+
+## Choosing your folders
+
+After installing, open Command Palette and type *Shortcuts*. While the catalogue is empty,
+this finds the hint "Shortcuts: no files found, choose your folders"; Enter on it opens
+Shortcuts' settings. The settings are also in Command Palette settings, Extensions, Shortcuts.
+Enter one folder per line in *Folders*; append `\**` to include everything below it, for
+example `%USERPROFILE%\shortcuts\**`.
+
+While the catalogue is empty and the example folder `%USERPROFILE%\shortcuts` is among your
+folders, typing *Shortcuts* also finds "Shortcuts: create example folder". It writes
+`Hello.cmd`, `Hello.ps1` and a link "Open shortcuts folder" into it. Files that already exist
+are kept.
+
+A `.ps1` runs in PowerShell 7 (`pwsh`); install it with `winget install Microsoft.PowerShell`.
 
 ## Starting a script
 

@@ -10,6 +10,7 @@
 ## Table of Contents
 
 ### Open
+- [CPS-015 — The logo test does not fail on a locked temp file on Windows](cps-015.md)
 - [CPS-014 — A file added in a linked subfolder appears without a restart](cps-014.md)
 - [CPS-010 — Shortcuts is in the Command Palette Extension Gallery, installed from the Microsoft Store](cps-010.md)
 - [CPS-008e — ubCode shows and checks the requirements in VS Code](cps-008e.md)

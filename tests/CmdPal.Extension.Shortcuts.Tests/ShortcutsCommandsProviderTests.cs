@@ -42,7 +42,15 @@ public sealed class ShortcutsCommandsProviderTests : IDisposable
     private ICommandItem[] Items(params string[] patterns)
     {
         var provider = new ShortcutsCommandsProvider(Manager(string.Join("\n", patterns)), history: NewHistory());
-        return provider.TopLevelCommands();
+        return Listed(provider);
+    }
+
+    // The top-level commands without the settings command, which is always listed last; SettingsCommand_* test it.
+    private static ICommandItem[] Listed(ShortcutsCommandsProvider provider)
+    {
+        var items = provider.TopLevelCommands();
+        Assert.Equal(SettingsTitle, items[^1].Title);
+        return items[..^1];
     }
 
     [Fact]
@@ -95,7 +103,7 @@ public sealed class ShortcutsCommandsProviderTests : IDisposable
         var form = (IFormContent)manager.Settings.ToContent()[0];
         form.SubmitForm(Json(newPattern, ".cmd"), "");
 
-        var item = Assert.Single(provider.TopLevelCommands());
+        var item = Assert.Single(Listed(provider));
         Assert.Equal("two", item.Title);
         Assert.Equal(1, raised);
         Assert.Contains(JsonSerializer.Serialize(newPattern).Trim('"'), File.ReadAllText(file));
@@ -109,7 +117,7 @@ public sealed class ShortcutsCommandsProviderTests : IDisposable
 
         var provider = new ShortcutsCommandsProvider(manager, history: NewHistory());
 
-        Assert.Equal(HintTitle, Assert.Single(provider.TopLevelCommands()).Title);
+        Assert.Equal(HintTitle, Assert.Single(Listed(provider)).Title);
     }
 
     [Fact]
@@ -120,7 +128,7 @@ public sealed class ShortcutsCommandsProviderTests : IDisposable
 
         var provider = new ShortcutsCommandsProvider(manager, history: NewHistory());
 
-        Assert.Equal(HintTitle, Assert.Single(provider.TopLevelCommands()).Title);
+        Assert.Equal(HintTitle, Assert.Single(Listed(provider)).Title);
     }
 
     [Fact]
@@ -193,7 +201,7 @@ public sealed class ShortcutsCommandsProviderTests : IDisposable
             return true;
         }, NewHistory());
 
-        var item = Assert.Single(provider.TopLevelCommands());
+        var item = Assert.Single(Listed(provider));
 
         var command = Assert.IsType<RunScriptCommand>(Assert.IsType<CommandItem>(item).Command);
         Assert.Equal("Run", command.Name);
@@ -214,7 +222,7 @@ public sealed class ShortcutsCommandsProviderTests : IDisposable
         var path = Touch("tool" + extension);
         var provider = new ShortcutsCommandsProvider(Manager(P("**"), extension), spec => true, NewHistory());
 
-        var item = Assert.Single(provider.TopLevelCommands());
+        var item = Assert.Single(Listed(provider));
 
         var more = Assert.Single(item.MoreCommands);
         var context = Assert.IsType<CommandContextItem>(more);
@@ -251,7 +259,7 @@ public sealed class ShortcutsCommandsProviderTests : IDisposable
 
         Touch("new.cmd");
 
-        var appeared = await EventuallyAsync(() => provider.TopLevelCommands().Any(i => i.Title == "new"));
+        var appeared = await EventuallyAsync(() => Listed(provider).Any(i => i.Title == "new"));
         Assert.True(appeared, "new.cmd did not appear within 5 s");
         Assert.True(await EventuallyAsync(() => Volatile.Read(ref raised) >= 1), "ItemsChanged was not raised within 5 s");
     }
@@ -264,17 +272,19 @@ public sealed class ShortcutsCommandsProviderTests : IDisposable
             Manager(P("**")),
             history: NewHistory(),
             rebuildQuiet: TimeSpan.FromMilliseconds(50));
-        Assert.Contains(provider.TopLevelCommands(), i => i.Title == "old");
+        Assert.Contains(Listed(provider), i => i.Title == "old");
 
         File.Delete(old);
 
-        var gone = await EventuallyAsync(() => provider.TopLevelCommands().All(i => i.Title != "old"));
+        var gone = await EventuallyAsync(() => Listed(provider).All(i => i.Title != "old"));
         Assert.True(gone, "old.cmd was still listed after 5 s");
     }
 
     private const string HintTitle = "Shortcuts: no files found, choose your folders";
 
     private const string OfferTitle = "Shortcuts: create example folder";
+
+    private const string SettingsTitle = "Shortcuts: change your settings";
 
     private ShortcutsCommandsProvider ExampleProvider(string patterns, string exampleFolder, string extensions = ".cmd .ps1 .lnk") =>
         new(
@@ -290,7 +300,7 @@ public sealed class ShortcutsCommandsProviderTests : IDisposable
         Directory.CreateDirectory(empty);
         var provider = ExampleProvider(Path.Combine(empty, "**"), P("examples"));
 
-        var item = Assert.Single(provider.TopLevelCommands());
+        var item = Assert.Single(Listed(provider));
 
         Assert.Equal(HintTitle, item.Title);
     }
@@ -301,7 +311,7 @@ public sealed class ShortcutsCommandsProviderTests : IDisposable
         var folder = P("examples");
         var provider = ExampleProvider(Path.Combine(folder, "**"), folder);
 
-        var items = provider.TopLevelCommands();
+        var items = Listed(provider);
 
         Assert.Equal([HintTitle, OfferTitle], items.Select(i => i.Title).ToArray());
         var settings = Assert.IsAssignableFrom<ICommandSettings>(provider.Settings);
@@ -319,8 +329,39 @@ public sealed class ShortcutsCommandsProviderTests : IDisposable
 
         var items = provider.TopLevelCommands();
 
-        Assert.Equal(2, items.Length);
+        Assert.Equal(3, items.Length);
         Assert.All(items, i => Assert.StartsWith("Shortcuts: ", i.Title, StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void SettingsCommand_IsListedLast_WithFiles()
+    {
+        Touch("a.cmd");
+        var provider = new ShortcutsCommandsProvider(Manager(P("**")), history: NewHistory());
+
+        var items = provider.TopLevelCommands();
+
+        Assert.Equal(["a", SettingsTitle], items.Select(i => i.Title).ToArray());
+        AssertOpensTheSettings(provider, items[^1]);
+    }
+
+    [Fact]
+    public void SettingsCommand_IsListedLast_WithAnEmptyCatalog()
+    {
+        var folder = P("examples");
+        var provider = ExampleProvider(Path.Combine(folder, "**"), folder);
+
+        var items = provider.TopLevelCommands();
+
+        Assert.Equal([HintTitle, OfferTitle, SettingsTitle], items.Select(i => i.Title).ToArray());
+        AssertOpensTheSettings(provider, items[^1]);
+    }
+
+    private static void AssertOpensTheSettings(ShortcutsCommandsProvider provider, ICommandItem item)
+    {
+        var settings = Assert.IsAssignableFrom<ICommandSettings>(provider.Settings);
+        // The toolkit builds a new settings page on every read, so compare the type.
+        Assert.IsType(settings.SettingsPage.GetType(), item.Command);
     }
 
     [Fact]
@@ -329,11 +370,11 @@ public sealed class ShortcutsCommandsProviderTests : IDisposable
         var empty = P("empty");
         Directory.CreateDirectory(empty);
         var provider = ExampleProvider(Path.Combine(empty, "**"), P("examples"));
-        Assert.Equal(HintTitle, Assert.Single(provider.TopLevelCommands()).Title);
+        Assert.Equal(HintTitle, Assert.Single(Listed(provider)).Title);
 
         Touch("empty", "a.cmd");
 
-        var listed = await EventuallyAsync(() => provider.TopLevelCommands().Select(i => i.Title).SequenceEqual(["a"]));
+        var listed = await EventuallyAsync(() => Listed(provider).Select(i => i.Title).SequenceEqual(["a"]));
         Assert.True(listed, "the list was not just 'a' within 5 s");
     }
 
@@ -343,11 +384,11 @@ public sealed class ShortcutsCommandsProviderTests : IDisposable
         var folder = P("examples");
         var provider = ExampleProvider(Path.Combine(folder, "**"), folder);
 
-        var offer = Assert.IsAssignableFrom<IInvokableCommand>(provider.TopLevelCommands()[1].Command);
+        var offer = Assert.IsAssignableFrom<IInvokableCommand>(Listed(provider)[1].Command);
         offer.Invoke(null!);
 
         var listed = await EventuallyAsync(() =>
-            provider.TopLevelCommands().Select(i => i.Title).SequenceEqual(["Hello", "Hello", "Open shortcuts folder"]));
+            Listed(provider).Select(i => i.Title).SequenceEqual(["Hello", "Hello", "Open shortcuts folder"]));
         Assert.True(listed, "the example entries did not appear within 5 s");
         Assert.True(File.Exists(Path.Combine(folder, ExampleFolder.HelloCmd)));
         Assert.True(File.Exists(Path.Combine(folder, ExampleFolder.HelloPs1)));
@@ -365,7 +406,7 @@ public sealed class ShortcutsCommandsProviderTests : IDisposable
         File.WriteAllText(notes, "my notes");
         var provider = ExampleProvider(Path.Combine(folder, "**"), folder, ".xyz");
 
-        var items = provider.TopLevelCommands();
+        var items = Listed(provider);
         var offer = Assert.IsAssignableFrom<IInvokableCommand>(items.Single(i => i.Title == OfferTitle).Command);
         offer.Invoke(null!);
 
@@ -379,7 +420,7 @@ public sealed class ShortcutsCommandsProviderTests : IDisposable
         var folder = P("examples");
 
         var provider = ExampleProvider(Path.Combine(folder, "**"), folder);
-        _ = provider.TopLevelCommands();
+        _ = Listed(provider);
 
         Assert.False(Directory.Exists(folder));
     }
@@ -400,7 +441,7 @@ public sealed class ShortcutsCommandsProviderTests : IDisposable
         var first = Touch("a.ps1");
         var second = Touch("b.ps1");
         var provider = new ShortcutsCommandsProvider(Manager(P("**"), ".ps1"), spec => true, NewHistory());
-        var items = provider.TopLevelCommands();
+        var items = Listed(provider);
         Assert.Equal(2, items.Length);
         var firstItem = items.Single(i => ArgumentsPage(i).Id == first + "#arguments");
         var secondItem = items.Single(i => ArgumentsPage(i).Id == second + "#arguments");
@@ -424,7 +465,7 @@ public sealed class ShortcutsCommandsProviderTests : IDisposable
         Touch("tool" + extension);
         var provider = new ShortcutsCommandsProvider(Manager(P("**"), extension), spec => true, NewHistory());
 
-        var item = Assert.Single(provider.TopLevelCommands());
+        var item = Assert.Single(Listed(provider));
 
         Assert.IsType<StartFileCommand>(item.Command);
         Assert.Empty(item.MoreCommands);
@@ -455,7 +496,7 @@ public sealed class ShortcutsCommandsProviderTests : IDisposable
             Manager(P("**"), ".cmd"),
             _ => throw new InvalidOperationException("No file name"),
             NewHistory());
-        var item = Assert.Single(provider.TopLevelCommands());
+        var item = Assert.Single(Listed(provider));
         var command = Assert.IsType<RunScriptCommand>(Assert.IsType<CommandItem>(item).Command);
 
         var result = command.Invoke();

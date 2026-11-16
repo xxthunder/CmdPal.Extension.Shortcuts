@@ -24,9 +24,10 @@ Status: in development — see the [backlog](docs/backlog/README.md).
 
 ## Choosing your folders
 
-After installing, open Command Palette and type *Shortcuts*. While the catalogue is empty,
-this finds the hint "Shortcuts: no files found, choose your folders"; Enter on it opens
-Shortcuts' settings. The settings are also in Command Palette settings, Extensions, Shortcuts.
+After installing, open Command Palette and type *Shortcuts*. This always finds "Shortcuts:
+change your settings", which opens Shortcuts' settings; while the catalogue is empty, it also
+finds the hint "Shortcuts: no files found, choose your folders", which opens them too. The
+settings are also in Command Palette settings, Extensions, Shortcuts.
 Enter one folder per line in *Folders*; append `\**` to include everything below it, for
 example `%USERPROFILE%\shortcuts\**`.
 

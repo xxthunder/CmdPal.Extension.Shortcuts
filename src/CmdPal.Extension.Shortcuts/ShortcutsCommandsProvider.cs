@@ -15,10 +15,12 @@ namespace CmdPal.Extension.Shortcuts;
 
 public sealed partial class ShortcutsCommandsProvider : CommandProvider
 {
-    // Both titles start with the extension's name: Command Palette's empty search does not surface them, typing "Shortcuts" does.
+    // The extension's own commands start with its name: Command Palette's empty search does not surface them, typing "Shortcuts" does.
     public const string HintTitle = "Shortcuts: no files found, choose your folders";
 
     public const string OfferTitle = "Shortcuts: create example folder";
+
+    public const string SettingsTitle = "Shortcuts: change your settings";
 
     private readonly SettingsManager _settings;
 
@@ -119,8 +121,15 @@ public sealed partial class ShortcutsCommandsProvider : CommandProvider
         var items = Catalog.Build(_settings.Patterns, _settings.Extensions)
             .Select(ToItem)
             .ToArray();
-        return items.Length > 0 ? items : EmptyCatalogItems();
+        return [.. items.Length > 0 ? items : EmptyCatalogItems(), SettingsItem()];
     }
+
+    private CommandItem SettingsItem() =>
+        new(_settings.Settings.SettingsPage)
+        {
+            Title = SettingsTitle,
+            Subtitle = "The folders and file extensions to catalogue",
+        };
 
     private ICommandItem[] EmptyCatalogItems()
     {

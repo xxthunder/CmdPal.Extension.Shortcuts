@@ -22,7 +22,6 @@
 
 ### In Progress
 - [CPS-011 — A new user sees how to choose folders when the catalogue is empty](cps-011.md)
-- [CPS-002d — A file added to a catalogued folder appears without a restart](cps-002d.md)
 - [CPS-002 — Folders of your choice appear in the Command Palette main search](cps-002.md)
 - [CPS-001 — Backlog refinement](cps-001.md)
 
@@ -34,6 +33,7 @@
 - [CPS-005 — The extension shows its own icon](cps-005.md)
 - [CPS-004 — The repository and the extension are called Shortcuts](cps-004.md)
 - [CPS-003 — A command-line tool lists the catalogue for given patterns and extensions](cps-003.md)
+- [CPS-002d — A file added to a catalogued folder appears without a restart](cps-002d.md)
 - [CPS-002c — Folders and extensions are settings of the extension](cps-002c.md)
 - [CPS-002b — The extension lists the catalogue as top-level commands and starts a file](cps-002b.md)
 - [CPS-002a — The catalogue library lists files by folder pattern and extension](cps-002a.md)

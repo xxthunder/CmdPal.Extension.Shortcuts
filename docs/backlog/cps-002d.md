@@ -1,6 +1,6 @@
-# [CPS-002d] A file added to a catalogued folder appears without a restart
+# [CPS-002d] ✅ DONE - A file added to a catalogued folder appears without a restart
 
-**Status**: In Progress
+**Status**: Done (2026-11-16)
 **Priority**: Medium
 **Component**: `src/FoldersCatalog/`, `src/CmdPal.Extension.Shortcuts/`
 
@@ -30,6 +30,6 @@ there with a fake clock.
 - 2026-11-15 (final review): A file created between a catalogue walk and the start of its watcher (milliseconds, at start and on a settings change) appears with the next change in that tree.
 
 **Acceptance Criteria**:
-- [ ] A burst of change events leads to one rebuild after the quiet time, with tests
-- [ ] A file created in a catalogued folder appears in the main search without a restart of Command Palette
-- [ ] A deleted file disappears from the main search without a restart
+- [x] A burst of change events leads to one rebuild after the quiet time, with tests
+- [x] A file created in a catalogued folder appears in the main search without a restart of Command Palette
+- [x] A deleted file disappears from the main search without a restart

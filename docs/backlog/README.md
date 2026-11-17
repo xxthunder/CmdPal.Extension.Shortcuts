@@ -10,6 +10,8 @@
 ## Table of Contents
 
 ### Open
+- [CPS-017 — Folders can be excluded in the settings](cps-017.md)
+- [CPS-016 — The subtitle shows the file's full path](cps-016.md)
 - [CPS-015 — The logo test does not fail on a locked temp file on Windows](cps-015.md)
 - [CPS-014 — A file added in a linked subfolder appears without a restart](cps-014.md)
 - [CPS-010 — Shortcuts is in the Command Palette Extension Gallery, installed from the Microsoft Store](cps-010.md)

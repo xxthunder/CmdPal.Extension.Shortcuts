@@ -5,14 +5,15 @@
 
 using SkiaSharp;
 
-if (args.Length != 2 || string.IsNullOrWhiteSpace(args[0]) || string.IsNullOrWhiteSpace(args[1]))
+if (args.Length is < 2 or > 3 || args.Any(string.IsNullOrWhiteSpace))
 {
-    Console.Error.WriteLine("Usage: dotnet run tools/logos.cs -- <source.png> <assets-dir>");
+    Console.Error.WriteLine("Usage: dotnet run tools/logos.cs -- <source.png> <assets-dir> [<gallery-icon.png>]");
     return 2;
 }
 
 var sourcePath = args[0];
 var assetsDir = args[1];
+var galleryPath = args.Length == 3 ? args[2] : null;
 
 if (!File.Exists(sourcePath))
 {
@@ -37,7 +38,16 @@ if (!File.Exists(sourcePath))
     ("Wide310x150Logo.scale-200.png", 620, 300),
     ("SplashScreen.scale-200.png", 1240, 600),
     ("LockScreenLogo.scale-200.png", 48, 48),
+    ("SmallTile.png", 71, 71),
+    ("LargeTile.png", 310, 310),
+    ("Square150x150Logo.png", 150, 150),
+    ("Wide310x150Logo.png", 310, 150),
+    ("SplashScreen.png", 620, 300),
+    ("Square44x44Logo.png", 44, 44),
 ];
+
+// The Gallery icon: written to the optional third argument.
+const int GallerySize = 256;
 
 // Skia has no Lanczos; linear filtering with mipmaps gives the high-quality downscale.
 var sampling = new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear);
@@ -53,7 +63,14 @@ try
 {
     Directory.CreateDirectory(assetsDir);
 
-    foreach (var (name, width, height) in logos)
+    var targets = logos.Select(l => (Path.Combine(assetsDir, l.Name), l.Width, l.Height)).ToList();
+    if (galleryPath is not null)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(galleryPath))!);
+        targets.Add((galleryPath, GallerySize, GallerySize));
+    }
+
+    foreach (var (path, width, height) in targets)
     {
         var scale = Math.Min((float)width / source.Width, (float)height / source.Height);
         var w = source.Width * scale;
@@ -65,9 +82,9 @@ try
         surface.Canvas.DrawImage(source, target, sampling);
         using var image = surface.Snapshot();
         using var png = image.Encode(SKEncodedImageFormat.Png, 100);
-        using var file = File.Create(Path.Combine(assetsDir, name));
+        using var file = File.Create(path);
         png.SaveTo(file);
-        Console.WriteLine($"{name} {width}x{height}");
+        Console.WriteLine($"{path} {width}x{height}");
     }
 }
 catch (Exception e) when (e is IOException or UnauthorizedAccessException)

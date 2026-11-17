@@ -1,3 +1,4 @@
+using System.Xml.Linq;
 using SkiaSharp;
 
 namespace FoldersCatalog.Tests;
@@ -7,8 +8,10 @@ public sealed class AssetsTests
 {
     private const string SourceRelative = "src/CmdPal.Extension.Shortcuts/Assets/Source/Logo.png";
     private const string AssetsRelative = "src/CmdPal.Extension.Shortcuts/Assets";
+    private const string GalleryRelative = "store/gallery/icon.png";
+    private const string ManifestRelative = "src/CmdPal.Extension.Shortcuts/Package.appxmanifest";
     private const string Rerun =
-        "dotnet run tools/logos.cs -- src/CmdPal.Extension.Shortcuts/Assets/Source/Logo.png src/CmdPal.Extension.Shortcuts/Assets";
+        "dotnet run tools/logos.cs -- src/CmdPal.Extension.Shortcuts/Assets/Source/Logo.png src/CmdPal.Extension.Shortcuts/Assets store/gallery/icon.png";
 
     private static string[] PngNames(string dir) =>
         Directory.GetFiles(dir, "*.png").Select(f => Path.GetFileName(f)!).Order(StringComparer.Ordinal).ToArray();
@@ -52,18 +55,70 @@ public sealed class AssetsTests
 
         try
         {
-            var (code, _, stderr) = ToolRunner.Run("logos.cs", source, rendered);
+            var renderedGallery = Path.Combine(rendered, "gallery-icon.png.out");
+            var (code, _, stderr) = ToolRunner.Run("logos.cs", source, rendered, renderedGallery);
 
             Assert.True(code == 0, $"logos.cs exited {code} for {SourceRelative}: {stderr}");
+            Assert.True(File.Exists(renderedGallery), $"logos.cs wrote no gallery icon to {renderedGallery}");
             Assert.Equal(PngNames(rendered), PngNames(assets));
             foreach (var name in PngNames(rendered))
             {
                 AssertSimilar(Path.Combine(rendered, name), Path.Combine(assets, name), name);
             }
+
+            AssertSimilar(renderedGallery, Path.Combine(root, GalleryRelative.Replace('/', Path.DirectorySeparatorChar)), GalleryRelative);
         }
         finally
         {
             Directory.Delete(rendered, recursive: true);
         }
+    }
+
+    [Fact]
+    public void Manifest_LogosExist()
+    {
+        var root = ToolRunner.RepoRoot();
+        var manifest = Path.Combine(root, ManifestRelative.Replace('/', Path.DirectorySeparatorChar));
+        var assets = Path.Combine(root, AssetsRelative.Replace('/', Path.DirectorySeparatorChar));
+        var document = XDocument.Load(manifest);
+
+        var values = document.Descendants()
+            .SelectMany(e => e.Attributes().Select(a => a.Value).Append(e.HasElements ? "" : e.Value))
+            .Where(v => v.StartsWith(@"Assets\", StringComparison.Ordinal) && v.EndsWith(".png", StringComparison.Ordinal))
+            .Distinct()
+            .ToArray();
+
+        Assert.Contains(@"Assets\SmallTile.png", values);
+        Assert.Contains(@"Assets\LargeTile.png", values);
+        var tiles = document.Descendants().Where(e => e.Name.LocalName == "DefaultTile").ToArray();
+        Assert.Contains(tiles, t => (string?)t.Attribute("Square71x71Logo") == @"Assets\SmallTile.png");
+        Assert.Contains(tiles, t => (string?)t.Attribute("Square310x310Logo") == @"Assets\LargeTile.png");
+
+        foreach (var value in values)
+        {
+            var name = value[@"Assets\".Length..];
+            var stem = Path.GetFileNameWithoutExtension(name);
+            var exists = File.Exists(Path.Combine(assets, name))
+                || Directory.GetFiles(assets, stem + ".*.png").Any(f =>
+                {
+                    var qualifier = Path.GetFileName(f)[(stem.Length + 1)..];
+                    return qualifier.StartsWith("scale-", StringComparison.Ordinal)
+                        || qualifier.StartsWith("targetsize-", StringComparison.Ordinal);
+                });
+            Assert.True(exists, $"The manifest names {value}, but {name} (or a scale/targetsize variant) is not in {AssetsRelative}");
+        }
+    }
+
+    [Fact]
+    public void GalleryIcon_Is256AndAtMost100KB()
+    {
+        var path = Path.Combine(ToolRunner.RepoRoot(), GalleryRelative.Replace('/', Path.DirectorySeparatorChar));
+        Assert.True(File.Exists(path), $"{GalleryRelative} does not exist. Re-run: {Rerun}");
+
+        using var bitmap = SKBitmap.Decode(path);
+        Assert.True(bitmap is not null, $"{GalleryRelative} cannot be decoded");
+        Assert.Equal(256, bitmap.Width);
+        Assert.Equal(256, bitmap.Height);
+        Assert.True(new FileInfo(path).Length <= 100 * 1024, $"{GalleryRelative} is {new FileInfo(path).Length} bytes, the Gallery allows 100 KB");
     }
 }

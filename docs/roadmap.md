@@ -7,10 +7,12 @@ itself, in the [backlog](backlog/README.md); this page holds only the order and 
 
 | # | Item | Why at this point |
 |---|---|---|
-| 1 | [CPS-013](backlog/cps-013.md) · One build harness for gate, CI and UAT, with badges in the README | Every later item uses the gate, the CI jobs and the UAT script; written once here, they are not repeated in each pull request. |
-| 2 | [CPS-002d](backlog/cps-002d.md) · A file added to a catalogued folder appears without a restart | Users expect a new script to show up on its own; without it, every new file needs a restart of Command Palette. |
-| 3 | [CPS-011](backlog/cps-011.md) · A new user sees how to choose folders when the catalogue is empty | A stranger has no `shortcuts` folder; without the hint, the extension looks broken right after the install from the Store. |
-| 4 | [CPS-010](backlog/cps-010.md) · Shortcuts is in the Command Palette Extension Gallery, installed from the Microsoft Store | The goal: the identity from Partner Center, the bundle from CI, certification, then the Gallery's pull request. |
+| 1 | [CPS-016](backlog/cps-016.md) · The subtitle shows the file's full path | A script and its `.bat` wrapper look alike in the main search; the full path tells them apart. Part of the first release. |
+| 2 | [CPS-017](backlog/cps-017.md) · Folders can be excluded in the settings | Library folders such as `~\shortcuts\lib` fill the main search with files nobody starts. Part of the first release. |
+| 3 | [CPS-010](backlog/cps-010.md) · Shortcuts is in the Command Palette Extension Gallery, installed from the Microsoft Store | The goal: the identity from Partner Center, the bundle from CI, certification, then the Gallery's pull request. |
+
+Done on the way: [CPS-013](backlog/cps-013.md) (one build harness), [CPS-002d](backlog/cps-002d.md)
+(files appear without a restart), [CPS-011](backlog/cps-011.md) (an empty catalogue explains itself).
 
 CPS-010 starts with the author's steps in Partner Center: the package identity it reserves is
 the input of the CI bundle.

@@ -9,15 +9,13 @@
   IgnorableNamespaces="uap uap3 rescap">
 
   <Identity
-    Name="CmdPal.Extension.Shortcuts"
-    Publisher="CN=xxthunder"
-    Version="0.0.1.0" />
-  <!-- When you're ready to publish your extension, you'll need to change the
-       Publisher= to match your own identity -->
+    Name="karnomag.ShortcutsforCommandPalette"
+    Publisher="CN=EB467DD7-FED1-4C41-A876-46255255EB4A"
+    Version="0.0.1.0" /> <!-- x-release-please-version -->
 
   <Properties>
-    <DisplayName>Shortcuts</DisplayName>
-    <PublisherDisplayName>xxthunder</PublisherDisplayName>
+    <DisplayName>Shortcuts for Command Palette</DisplayName>
+    <PublisherDisplayName>karnomag</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 

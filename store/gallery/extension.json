@@ -1,0 +1,19 @@
+{
+  "$schema": "../../../.github/schemas/extension.schema.json",
+  "id": "karnomag.shortcuts",
+  "title": "Shortcuts",
+  "shortDescription": "Folders of your choice in the Command Palette main search, ranked by how often you start them.",
+  "description": "Shortcuts catalogues folders of your choice into the Command Palette main search. The files in them, filtered by extension, show up as top-level commands that Command Palette ranks by how often and how recently you start them. Scripts (.ps1, .cmd, .bat; .ps1 needs PowerShell 7, pwsh) run in their own folder and remember the arguments they were started with; links (.lnk, .url) and programs (.exe) start on Enter. New, deleted and renamed files show up without a restart. An example folder with a small script gets you started.",
+  "author": {
+    "name": "karnomag",
+    "url": "https://github.com/xxthunder"
+  },
+  "icon": "icon.png",
+  "detection": { "packageFamilyName": "karnomag.ShortcutsforCommandPalette_nsydvkza7yaey" },
+  "installSources": [
+    { "type": "msstore", "id": "9NN0F5R302LZ" }
+  ],
+  "homepage": "https://github.com/xxthunder/CmdPal.Extension.Shortcuts",
+  "tags": ["launcher", "scripts", "folders", "shortcuts", "search"],
+  "categories": ["productivity", "utilities-and-tools"]
+}

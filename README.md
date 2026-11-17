@@ -20,7 +20,13 @@ New, deleted and renamed files show up in the search without a restart. Files in
 
 Formerly called CmdPal.Extension.Folders.
 
-Status: in development — see the [backlog](docs/backlog/README.md).
+Status: being published to the Microsoft Store — see the [backlog](docs/backlog/README.md).
+
+## Installing
+
+Install *Shortcuts for Command Palette* from the Microsoft Store:
+<https://apps.microsoft.com/detail/9NN0F5R302LZ>, or from Command Palette's Extension Gallery
+once it is published there.
 
 ## Choosing your folders
 
@@ -101,6 +107,17 @@ Windows also the extension's tests and its Release build. Elsewhere it prints th
 the extension's part. `scripts/gate` runs the same in the .NET SDK container, so no local SDK
 is needed.
 
+To build the installable bundle (x64 and ARM64, unsigned), on Windows:
+
+```
+dotnet run build.cs -- bundle
+```
+
+Releases: release-please keeps a release pull request open; merging it tags the version, and
+the release job attaches the `.msixbundle` to the GitHub release. The repository setting
+"Allow GitHub Actions to create and approve pull requests" must be on. The release pull
+request gets no CI checks, because it is opened with `GITHUB_TOKEN`.
+
 ## UAT and trying a development build
 
 On Windows, in PowerShell 7, check out the branch (or pull request) and deploy it:
@@ -117,7 +134,9 @@ installed (`scoop install extras/powertoys`). PowerToys starts Command Palette a
 kept running across a registration would list the extension twice. A
 registered development build runs in place from its `bin` folder, which is why the extension must
 be stopped before each build. Remove it with
-`Get-AppxPackage CmdPal.Extension.Shortcuts | Remove-AppxPackage`.
+`Get-AppxPackage karnomag.ShortcutsforCommandPalette | Remove-AppxPackage`. A development build
+registered under the old package name `CmdPal.Extension.Shortcuts` must be
+removed once with that old name.
 
 ## License
 

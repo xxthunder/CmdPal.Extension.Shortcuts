@@ -21,13 +21,13 @@
 - [CPS-008 — Requirements and traceability with sphinx-needs, sphinx-codelinks and ubCode](cps-008.md)
 
 ### In Progress
-- [CPS-011 — A new user sees how to choose folders when the catalogue is empty](cps-011.md)
 - [CPS-002 — Folders of your choice appear in the Command Palette main search](cps-002.md)
 - [CPS-001 — Backlog refinement](cps-001.md)
 
 ### Done
 - [CPS-013 — One build harness for gate, CI and UAT, with badges in the README](cps-013.md)
 - [CPS-012 — A script's earlier arguments are offered again](cps-012.md)
+- [CPS-011 — A new user sees how to choose folders when the catalogue is empty](cps-011.md)
 - [CPS-009 — A script takes arguments from the main search](cps-009.md)
 - [CPS-006 — Folders whose names start with a dot are left out unless named](cps-006.md)
 - [CPS-005 — The extension shows its own icon](cps-005.md)

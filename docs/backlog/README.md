@@ -14,7 +14,6 @@
 - [CPS-016 — The subtitle shows the file's full path](cps-016.md)
 - [CPS-015 — The logo test does not fail on a locked temp file on Windows](cps-015.md)
 - [CPS-014 — A file added in a linked subfolder appears without a restart](cps-014.md)
-- [CPS-010 — Shortcuts is in the Command Palette Extension Gallery, installed from the Microsoft Store](cps-010.md)
 - [CPS-008e — ubCode shows and checks the requirements in VS Code](cps-008e.md)
 - [CPS-008d — A trace gate fails CI when a requirement has no test](cps-008d.md)
 - [CPS-008c — Code comments link to the requirements through sphinx-codelinks](cps-008c.md)
@@ -23,6 +22,7 @@
 - [CPS-008 — Requirements and traceability with sphinx-needs, sphinx-codelinks and ubCode](cps-008.md)
 
 ### In Progress
+- [CPS-010 — Shortcuts is in the Command Palette Extension Gallery, installed from the Microsoft Store](cps-010.md)
 - [CPS-002 — Folders of your choice appear in the Command Palette main search](cps-002.md)
 - [CPS-001 — Backlog refinement](cps-001.md)
 

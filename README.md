@@ -64,7 +64,7 @@ The logos come from `src/CmdPal.Extension.Shortcuts/Assets/Source/Logo.png`, the
 xxthunder/shortcuts. After changing it, render them again:
 
 ```
-dotnet run tools/logos.cs -- src/CmdPal.Extension.Shortcuts/Assets/Source/Logo.png src/CmdPal.Extension.Shortcuts/Assets
+dotnet run tools/logos.cs -- src/CmdPal.Extension.Shortcuts/Assets/Source/Logo.png src/CmdPal.Extension.Shortcuts/Assets store/gallery/icon.png
 ```
 
 ## Setting up a Windows machine

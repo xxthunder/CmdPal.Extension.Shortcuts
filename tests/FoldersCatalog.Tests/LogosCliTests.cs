@@ -4,7 +4,7 @@ namespace FoldersCatalog.Tests;
 public sealed class LogosCliTests : IDisposable
 {
     private const string UsageLine =
-        "Usage: dotnet run tools/logos.cs -- <source.png> <assets-dir>";
+        "Usage: dotnet run tools/logos.cs -- <source.png> <assets-dir> [<gallery-icon.png>]";
 
     // 12x8 RGBA PNG.
     private const string SourcePngBase64 =
@@ -26,6 +26,12 @@ public sealed class LogosCliTests : IDisposable
         ["Wide310x150Logo.scale-200.png"] = (620, 300),
         ["SplashScreen.scale-200.png"] = (1240, 600),
         ["LockScreenLogo.scale-200.png"] = (48, 48),
+        ["SmallTile.png"] = (71, 71),
+        ["LargeTile.png"] = (310, 310),
+        ["Square150x150Logo.png"] = (150, 150),
+        ["Wide310x150Logo.png"] = (310, 150),
+        ["SplashScreen.png"] = (620, 300),
+        ["Square44x44Logo.png"] = (44, 44),
     };
 
     private readonly string _root = Path.GetFullPath(
@@ -98,6 +104,35 @@ public sealed class LogosCliTests : IDisposable
         {
             Assert.Equal(bytes, File.ReadAllBytes(Path.Combine(assets, name)));
         }
+    }
+
+    [Fact]
+    public void Cli_WithGalleryArgument_WritesA256x256Icon()
+    {
+        var source = WriteSource();
+        var assets = P("assets");
+        Directory.CreateDirectory(assets);
+        var gallery = P("gallery", "icon.png");
+
+        var (code, _, stderr) = ToolRunner.Run("logos.cs", source, assets, gallery);
+
+        Assert.True(code == 0, stderr);
+        Assert.Equal((256, 256), PngSize(gallery));
+        Assert.Equal(Logos.Keys.Order(StringComparer.Ordinal).ToArray(), PngNames(assets));
+    }
+
+    [Fact]
+    public void Cli_WithoutGalleryArgument_WritesNoExtraFile()
+    {
+        var source = WriteSource();
+        var assets = P("assets");
+        Directory.CreateDirectory(assets);
+
+        var (code, _, stderr) = ToolRunner.Run("logos.cs", source, assets);
+
+        Assert.True(code == 0, stderr);
+        Assert.False(Directory.Exists(P("gallery")));
+        Assert.Equal(Logos.Keys.Count, PngNames(assets).Length);
     }
 
     [Fact]

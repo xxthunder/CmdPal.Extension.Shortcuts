@@ -2,7 +2,7 @@ namespace FoldersCatalog.Tests;
 
 public sealed class BuildScriptTests
 {
-    private const string UsageLine = "Usage: dotnet run build.cs -- <check|extension> [--dry-run]";
+    private const string UsageLine = "Usage: dotnet run build.cs -- <check|extension|bundle> [--dry-run]";
 
     private const string ExtensionProject = "src/CmdPal.Extension.Shortcuts/CmdPal.Extension.Shortcuts.csproj";
 
@@ -110,6 +110,33 @@ public sealed class BuildScriptTests
         {
             Assert.Equal(1, code);
             Assert.Equal(["extension: needs Windows"], Lines(stderr));
+        }
+    }
+
+    [Fact]
+    public void Bundle_DryRun_ListsTheStepsOnWindows()
+    {
+        var (code, stdout, stderr) = ToolRunner.RunFile("build.cs", "bundle", "--dry-run");
+
+        if (OperatingSystem.IsWindows())
+        {
+            var version = File.ReadAllText(Path.Combine(ToolRunner.RepoRoot(), "version.txt")).Trim();
+            var root = ToolRunner.RepoRoot();
+            var build = $"dotnet build {ExtensionProject} -c Release";
+            Assert.True(code == 0, stderr);
+            Assert.Equal(
+                [
+                    "delete AppPackages",
+                    $"{build} -p:Platform=x64 -p:GenerateAppxPackageOnBuild=true -p:AppxPackageSigningEnabled=false -p:AppxPackageDir=\"{root}\\AppPackages\\x64\\\\\"",
+                    $"{build} -p:Platform=ARM64 -p:GenerateAppxPackageOnBuild=true -p:AppxPackageSigningEnabled=false -p:AppxPackageDir=\"{root}\\AppPackages\\ARM64\\\\\"",
+                    $"bundle AppPackages\\ShortcutsforCommandPalette_{version}.0.msixbundle",
+                ],
+                Lines(stdout));
+        }
+        else
+        {
+            Assert.Equal(1, code);
+            Assert.Equal(["bundle: needs Windows"], Lines(stderr));
         }
     }
 }

@@ -20,3 +20,15 @@ PowerToys with Command Palette is needed. Open Command Palette (Win+Alt+Space by
 
 Command Palette activates the extension as an out-of-process COM server, and the extension needs full trust to start the scripts, links and programs the user chose.
 
+
+## Screenshots
+
+Uploaded to Partner Center as the Desktop screenshots of the first release (1953x1198, cropped
+to the Command Palette window):
+
+- `screenshots/1-empty-start.png`: an empty catalogue, Command Palette searched for "shortcuts";
+  Folders set to an empty folder `C:\ShortcutsEmpty`.
+- `screenshots/2-in-use.png`: Command Palette searched for "deploy"; Folders set to
+  `C:\ShortcutsDemo\**`, a demo folder outside the user profile (no user name in the paths) with
+  `Deploy website.cmd`, `Deploy docs.ps1`, `Deploy dashboard.url`, `Deploy folder.lnk` and
+  `tools\Deploy checklist.url`.

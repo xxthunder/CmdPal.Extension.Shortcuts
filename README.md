@@ -118,6 +118,59 @@ the release job attaches the `.msixbundle` to the GitHub release. The repository
 "Allow GitHub Actions to create and approve pull requests" must be on. The release pull
 request gets no CI checks, because it is opened with `GITHUB_TOKEN`.
 
+## Publishing the Store-signed bundle
+
+The bundle that the release job attaches is unsigned. The Store re-signs the package with a
+Microsoft certificate that every Windows trusts, and that signature stays valid outside the
+Store. `scripts/publish-store-bundle.ps1` puts the Store-signed bundle on the GitHub release
+and in WinGet, so that machines without the Store can install it ([CPS-019](docs/backlog/cps-019.md)).
+It is a copy of `scripts/publish-msstore-msix.ps1` from
+[8LWXpg/CmdPal-ProcessKiller](https://github.com/8LWXpg/CmdPal-ProcessKiller), with a check
+added before anything is published.
+
+Run it on Windows, in PowerShell 7, once the Store has certified the release. It needs `gh`
+and `komac` (`scoop install komac`). Behind a proxy, it uses `HTTPS_PROXY` like any other tool.
+
+```powershell
+.\scripts\publish-store-bundle.ps1 -WhatIf   # download and check only
+.\scripts\publish-store-bundle.ps1
+```
+
+What it does, in order:
+
+1. **Version.** It reads the tag of the latest GitHub release, for example `v1.0.0`. The
+   asset name follows from it: `karnomag.ShortcutsforCommandPalette_1.0.0.msixbundle`.
+2. **Download link.** It posts the Store ID `9NN0F5R302LZ` to
+   `https://store.rg-adguard.net/api/GetFiles`, with the ring `RP` (Release Preview).
+   rg-adguard is a third-party service, not Microsoft's. It asks the Store's delivery service,
+   which the Store app also uses, and answers with an HTML page that links every file of the
+   product. The `Origin`, `Referer` and `User-Agent` headers make the call look like one from
+   its web page. The script takes the last link that ends in `.msixbundle`. That link comes
+   from HTML, so it holds `&amp;` instead of `&`. The script decodes it; the download server
+   answers an encoded link with 403.
+3. **Download.** It downloads the bundle into the temp folder. The link points to Microsoft's
+   CDN (`tlu.dl.delivery.mp.microsoft.com`), so rg-adguard gives only the link; the file
+   comes from Microsoft. The link carries signed query parameters and probably expires after
+   some time.
+4. **Check.** ProcessKiller's script has no such step. The script stops before anything is
+   published unless:
+   - the Authenticode signature is `Valid` and its issuer starts with
+     `CN=Microsoft Marketplace CA`, the certificate the Store signs with;
+   - the bundle's `AppxMetadata/AppxBundleManifest.xml` has the name
+     `karnomag.ShortcutsforCommandPalette` and the release's version (`1.0.0.0`).
+
+   An unsigned or self-signed bundle fails the first check. While the Store has not yet
+   certified the release, it still serves the previous version, and the script stops with
+   "Try again once the Store has certified".
+5. **Publish.** `gh release upload --clobber` attaches the bundle to the release, and replaces
+   an asset of the same name, so a second run does no harm. Then `komac update` reads the
+   asset's URL, computes the hashes, writes the new manifest and opens a pull request in
+   `microsoft/winget-pkgs`. `komac update` needs an existing package: make the first manifest
+   once with `komac new`. With `-WhatIf`, the script reports this step and does not run it.
+
+rg-adguard has no documented interface and can change or go away. Then the script fails, and
+the check makes sure that it never publishes a wrong file.
+
 ## UAT and trying a development build
 
 On Windows, in PowerShell 7, check out the branch (or pull request) and deploy it:

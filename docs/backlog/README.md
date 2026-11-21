@@ -10,6 +10,7 @@
 ## Table of Contents
 
 ### Open
+- [CPS-020 — The watcher's burst test does not fail on a slow CI runner](cps-020.md)
 - [CPS-018 — A release publishes the update to the Microsoft Store](cps-018.md)
 - [CPS-017 — Folders can be excluded in the settings](cps-017.md)
 - [CPS-016 — The subtitle shows the file's full path](cps-016.md)

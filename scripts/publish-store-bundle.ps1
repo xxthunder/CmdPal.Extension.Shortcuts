@@ -71,6 +71,22 @@ if ($PSCmdlet.ShouldProcess($PackageIdentifier, "komac update $version")) {
                 Select-Object -ExpandProperty url)) {
         throw 'Could not resolve uploaded asset URL.'
     }
+    # komac update changes an existing package only; the first manifest comes from komac new.
+    $manifestPath = 'manifests/k/' + $PackageIdentifier.Replace('.', '/')
+    gh api "repos/microsoft/winget-pkgs/contents/$manifestPath" --silent 2>$null
+    if ($LASTEXITCODE -ne 0) {
+        throw "microsoft/winget-pkgs has no $PackageIdentifier yet. Make the first manifest once: komac new $PackageIdentifier --version $version --urls $assetUrl"
+    }
+    # komac opens its pull request from the user's fork and does not create one.
+    $login = gh api user --jq .login
+    $fork = gh api "repos/$login/winget-pkgs" --jq '.fork and .parent.full_name == "microsoft/winget-pkgs"' 2>$null
+    if ($LASTEXITCODE -ne 0 -or $fork -ne 'true') {
+        throw "$login has no fork of microsoft/winget-pkgs. Make it once: gh repo fork microsoft/winget-pkgs --clone=false"
+    }
+    # komac does not use gh's login; hand it gh's token unless one is set.
+    if (-not $env:GITHUB_TOKEN) {
+        $env:GITHUB_TOKEN = gh auth token
+    }
     Write-Host "Updating winget manifest for $PackageIdentifier $version ..."
     komac update $PackageIdentifier --version $version --urls $assetUrl
     if ($LASTEXITCODE -ne 0) {

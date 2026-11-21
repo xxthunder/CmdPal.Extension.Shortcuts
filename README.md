@@ -165,8 +165,13 @@ What it does, in order:
 5. **Publish.** `gh release upload --clobber` attaches the bundle to the release, and replaces
    an asset of the same name, so a second run does no harm. Then `komac update` reads the
    asset's URL, computes the hashes, writes the new manifest and opens a pull request in
-   `microsoft/winget-pkgs`. `komac update` needs an existing package: make the first manifest
-   once with `komac new`. With `-WhatIf`, the script reports this step and does not run it.
+   `microsoft/winget-pkgs`. komac does not use the login of `gh`: the script hands it the
+   token of `gh auth token` as `GITHUB_TOKEN`, unless `GITHUB_TOKEN` is already set.
+   `komac update` needs an existing package. While `microsoft/winget-pkgs` has none, the
+   script stops after the upload and prints the `komac new` command for the first manifest,
+   which is made once by hand. komac opens its pull request from a fork of
+   `microsoft/winget-pkgs` in the account of `gh`, and does not create one: without it, the
+   script stops and prints `gh repo fork microsoft/winget-pkgs --clone=false`. With `-WhatIf`, the script reports this step and does not run it.
 
 rg-adguard has no documented interface and can change or go away. Then the script fails, and
 the check makes sure that it never publishes a wrong file.

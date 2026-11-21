@@ -25,14 +25,13 @@
 ### In Progress
 - [CPS-020 — The watcher's burst test does not fail on a slow CI runner](cps-020.md)
 - [CPS-019 — A release puts the Store-signed bundle on GitHub and in WinGet](cps-019.md)
-- [CPS-010 — Shortcuts is in the Command Palette Extension Gallery, installed from the Microsoft Store](cps-010.md)
-- [CPS-002 — Folders of your choice appear in the Command Palette main search](cps-002.md)
 - [CPS-001 — Backlog refinement](cps-001.md)
 
 ### Done
 - [CPS-013 — One build harness for gate, CI and UAT, with badges in the README](cps-013.md)
 - [CPS-012 — A script's earlier arguments are offered again](cps-012.md)
 - [CPS-011 — A new user sees how to choose folders when the catalogue is empty](cps-011.md)
+- [CPS-010 — Shortcuts is in the Command Palette Extension Gallery, installed from the Microsoft Store](cps-010.md)
 - [CPS-009 — A script takes arguments from the main search](cps-009.md)
 - [CPS-006 — Folders whose names start with a dot are left out unless named](cps-006.md)
 - [CPS-005 — The extension shows its own icon](cps-005.md)
@@ -42,6 +41,7 @@
 - [CPS-002c — Folders and extensions are settings of the extension](cps-002c.md)
 - [CPS-002b — The extension lists the catalogue as top-level commands and starts a file](cps-002b.md)
 - [CPS-002a — The catalogue library lists files by folder pattern and extension](cps-002a.md)
+- [CPS-002 — Folders of your choice appear in the Command Palette main search](cps-002.md)
 
 ### Superseded
 - [CPS-007 — Badges in the README, coverage on Codecov](cps-007.md)

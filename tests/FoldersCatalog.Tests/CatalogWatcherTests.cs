@@ -101,16 +101,21 @@ public sealed class CatalogWatcherTests : IDisposable
     }
 
     [Fact]
-    public async Task BurstOf20Files_CallsChangedOnce()
+    public async Task BurstOf20Files_CallsChangedFewerTimesThanFiles()
     {
+        const int files = 20;
         using var watcher = Watch(_root + "/**");
 
-        for (var i = 0; i < 20; i++)
+        for (var i = 0; i < files; i++)
         {
             File.WriteAllText(P($"f{i}.cmd"), "");
         }
 
-        await AssertCalledOnceAsync();
+        Assert.True(await _called.WaitAsync(Timeout), "changed was not called");
+        await Task.Delay(Settle);
+        // On a slow runner a pause longer than the quiet time splits the burst;
+        // exactly one call is tested with a fake clock in DebouncerTests.
+        Assert.InRange(Count, 1, files - 1);
     }
 
     [Fact]

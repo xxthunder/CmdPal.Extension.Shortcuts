@@ -10,7 +10,6 @@
 ## Table of Contents
 
 ### Open
-- [CPS-020 — The watcher's burst test does not fail on a slow CI runner](cps-020.md)
 - [CPS-018 — A release publishes the update to the Microsoft Store](cps-018.md)
 - [CPS-017 — Folders can be excluded in the settings](cps-017.md)
 - [CPS-016 — The subtitle shows the file's full path](cps-016.md)
@@ -24,6 +23,7 @@
 - [CPS-008 — Requirements and traceability with sphinx-needs, sphinx-codelinks and ubCode](cps-008.md)
 
 ### In Progress
+- [CPS-020 — The watcher's burst test does not fail on a slow CI runner](cps-020.md)
 - [CPS-019 — A release puts the Store-signed bundle on GitHub and in WinGet](cps-019.md)
 - [CPS-010 — Shortcuts is in the Command Palette Extension Gallery, installed from the Microsoft Store](cps-010.md)
 - [CPS-002 — Folders of your choice appear in the Command Palette main search](cps-002.md)

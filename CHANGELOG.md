@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.1.0](https://github.com/xxthunder/CmdPal.Extension.Shortcuts/compare/v1.0.0...v1.1.0) (2026-11-21)
+
+
+### Features
+
+* **release:** script attaches the Store-signed bundle to the release (CPS-019) ([c0fc07a](https://github.com/xxthunder/CmdPal.Extension.Shortcuts/commit/c0fc07af485f637a1d3365001fa57f0ebf970de4))
+* **scoop:** the repository is a scoop bucket for the Store-signed bundle (CPS-019) ([dc6b7a8](https://github.com/xxthunder/CmdPal.Extension.Shortcuts/commit/dc6b7a8586465f204fc98eaf9caf162eeb1830ed))
+
+
+### Bug Fixes
+
+* **release:** hand komac gh's token, check its preconditions (CPS-019) ([3553e3d](https://github.com/xxthunder/CmdPal.Extension.Shortcuts/commit/3553e3db6c7ae416cb0e6eafcf8b40ad30ea001e))
+
 ## [1.0.0](https://github.com/xxthunder/CmdPal.Extension.Shortcuts/compare/v0.0.1...v1.0.0) (2026-11-18)
 
 

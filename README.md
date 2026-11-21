@@ -28,11 +28,12 @@ Install *Shortcuts for Command Palette* from the Microsoft Store:
 <https://apps.microsoft.com/detail/9NN0F5R302LZ>, or from Command Palette's Extension Gallery
 once it is published there.
 
-Without the Store, install it with [scoop](https://scoop.sh); this repository is a scoop bucket:
+Without the Store, install it with [scoop](https://scoop.sh), from the bucket
+[xxthunder-scoop-apps](https://github.com/xxthunder/xxthunder-scoop-apps):
 
 ```powershell
-scoop bucket add cmdpal-shortcuts https://github.com/xxthunder/CmdPal.Extension.Shortcuts
-scoop install cmdpal-shortcuts/cmdpal-shortcuts
+scoop bucket add xxthunder-scoop-apps https://github.com/xxthunder/xxthunder-scoop-apps
+scoop install xxthunder-scoop-apps/cmdpal-shortcuts
 ```
 
 Scoop downloads the Store-signed bundle from the GitHub release and adds it with
@@ -175,10 +176,12 @@ What it does, in order:
    certified the release, it still serves the previous version, and the script stops with
    "Try again once the Store has certified".
 5. **Publish.** `gh release upload --clobber` attaches the bundle to the release, and replaces
-   an asset of the same name, so a second run does no harm. It writes the version, the asset's
-   URL and the bundle's SHA-256 into the scoop manifest `bucket/cmdpal-shortcuts.json`; commit
-   and push that change, since scoop users get the new version from the bucket's default
-   branch. Scoop's own `checkver` would see the release before the bundle is on it. Then
+   an asset of the same name, so a second run does no harm. It fills the template
+   `scoop/cmdpal-shortcuts.json` with the version, the asset's URL and the bundle's SHA-256,
+   and writes the result through `gh api` as `bucket/cmdpal-shortcuts.json` into the bucket
+   repository `xxthunder/xxthunder-scoop-apps`, where scoop users get it. Change the manifest
+   in the template, not in the bucket. Scoop's own `checkver` would see the release before the
+   bundle is on it. Then
    `komac update` reads the
    asset's URL, computes the hashes, writes the new manifest and opens a pull request in
    `microsoft/winget-pkgs`. komac does not use the login of `gh`: the script hands it the

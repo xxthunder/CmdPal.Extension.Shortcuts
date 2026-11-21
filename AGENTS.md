@@ -20,8 +20,8 @@ The [roadmap](docs/roadmap.md) holds the order of the items up to the Extension 
 - `build.cs`: the one build script; the gate, CI and the author call it
   (`dotnet run build.cs -- check`).
 - `uat.ps1`: deploys the checkout for a UAT, Windows only.
-- `bucket/`: the scoop manifest; this repository is a scoop bucket. `scripts/publish-store-bundle.ps1`
-  sets its version, URL and hash.
+- `scoop/`: the template of the scoop manifest. `scripts/publish-store-bundle.ps1` fills in
+  version, URL and hash and writes it into the bucket repository `xxthunder/xxthunder-scoop-apps`.
 - `tests/` — the library's tests, and the extension's tests (Windows only).
 
 ## Working here

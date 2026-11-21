@@ -1,5 +1,4 @@
 using System.Text.Json;
-using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
 namespace FoldersCatalog.Tests;
@@ -8,13 +7,15 @@ public sealed class ScoopManifestTests
 {
     private static readonly XNamespace Foundation = "http://schemas.microsoft.com/appx/manifest/foundation/windows10";
 
+    // The template of the manifest that publish-store-bundle.ps1 fills and writes into the
+    // bucket repository xxthunder/xxthunder-scoop-apps.
     private static string ManifestPath() =>
-        Path.Combine(ToolRunner.RepoRoot(), "bucket", "cmdpal-shortcuts.json");
+        Path.Combine(ToolRunner.RepoRoot(), "scoop", "cmdpal-shortcuts.json");
 
     private static JsonElement Manifest()
     {
         var path = ManifestPath();
-        Assert.True(File.Exists(path), "bucket/cmdpal-shortcuts.json is missing");
+        Assert.True(File.Exists(path), "scoop/cmdpal-shortcuts.json is missing");
 
         using var document = JsonDocument.Parse(File.ReadAllText(path));
         return document.RootElement.Clone();
@@ -27,16 +28,13 @@ public sealed class ScoopManifestTests
     private static string[] Script(string hook) =>
         Manifest().GetProperty(hook).GetProperty("script").EnumerateArray().Select(l => l.GetString()!).ToArray();
 
-    [Fact]
-    public void Manifest_DownloadsTheStoreSignedBundleOfItsVersion()
+    [Theory]
+    [InlineData("version")]
+    [InlineData("url")]
+    [InlineData("hash")]
+    public void Template_LeavesTheReleaseFieldsToTheScript(string field)
     {
-        var manifest = Manifest();
-        var version = manifest.GetProperty("version").GetString();
-
-        Assert.Equal(
-            $"https://github.com/xxthunder/CmdPal.Extension.Shortcuts/releases/download/v{version}/{PackageName()}_{version}.msixbundle",
-            manifest.GetProperty("url").GetString());
-        Assert.Matches(new Regex("^[0-9a-f]{64}$"), manifest.GetProperty("hash").GetString());
+        Assert.Equal("", Manifest().GetProperty(field).GetString());
     }
 
     [Fact]

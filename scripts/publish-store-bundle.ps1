@@ -12,6 +12,7 @@ $ErrorActionPreference = 'Stop'
 $ProductId = '9NN0F5R302LZ'
 $PackageIdentifier = 'karnomag.ShortcutsforCommandPalette'
 $Repo = 'xxthunder/CmdPal.Extension.Shortcuts'
+$BucketRepo = 'xxthunder/xxthunder-scoop-apps'
 
 $tag = gh release view --repo $Repo --json tagName --jq .tagName
 if ($LASTEXITCODE -ne 0 -or -not $tag) {
@@ -65,15 +66,24 @@ if ($PSCmdlet.ShouldProcess($tag, "Upload $fileName")) {
     }
 }
 
-$bucketManifest = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..' 'bucket' 'cmdpal-shortcuts.json'))
-if ($PSCmdlet.ShouldProcess($bucketManifest, "Set version $version")) {
-    $scoop = Get-Content -Raw $bucketManifest | ConvertFrom-Json
+$bucketPath = 'bucket/cmdpal-shortcuts.json'
+if ($PSCmdlet.ShouldProcess("$BucketRepo/$bucketPath", "Publish the scoop manifest of $version")) {
+    $scoop = Get-Content -Raw (Join-Path $PSScriptRoot '..' 'scoop' 'cmdpal-shortcuts.json') | ConvertFrom-Json
     $scoop.version = $version
     $scoop.url = "https://github.com/$Repo/releases/download/$tag/$fileName"
     $scoop.hash = (Get-FileHash $outFile -Algorithm SHA256).Hash.ToLowerInvariant()
-    # LF and a final newline, as the file is committed.
-    [System.IO.File]::WriteAllText($bucketManifest, (($scoop | ConvertTo-Json -Depth 5) -replace "`r`n", "`n") + "`n")
-    Write-Host "Updated $bucketManifest; commit and push it so that scoop users get $version."
+    $json = (($scoop | ConvertTo-Json -Depth 5) -replace "`r`n", "`n") + "`n"
+    $put = @('-X', 'PUT', "repos/$BucketRepo/contents/$bucketPath",
+        '-f', "message=cmdpal-shortcuts: Update to version $version",
+        '-f', "content=$([Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($json)))")
+    # Replacing a file needs its blob SHA; a first publish has none.
+    $sha = gh api "repos/$BucketRepo/contents/$bucketPath" --jq .sha 2>$null
+    if ($LASTEXITCODE -eq 0) { $put += '-f', "sha=$sha" }
+    gh api @put --silent
+    if ($LASTEXITCODE -ne 0) {
+        throw "Could not write $bucketPath to $BucketRepo."
+    }
+    Write-Host "Published $bucketPath of $version to $BucketRepo."
 }
 
 if ($PSCmdlet.ShouldProcess($PackageIdentifier, "komac update $version")) {

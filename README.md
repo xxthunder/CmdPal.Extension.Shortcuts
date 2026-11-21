@@ -28,6 +28,18 @@ Install *Shortcuts for Command Palette* from the Microsoft Store:
 <https://apps.microsoft.com/detail/9NN0F5R302LZ>, or from Command Palette's Extension Gallery
 once it is published there.
 
+Without the Store, install it with [scoop](https://scoop.sh); this repository is a scoop bucket:
+
+```powershell
+scoop bucket add cmdpal-shortcuts https://github.com/xxthunder/CmdPal.Extension.Shortcuts
+scoop install cmdpal-shortcuts/cmdpal-shortcuts
+```
+
+Scoop downloads the Store-signed bundle from the GitHub release and adds it with
+`Add-AppxPackage`; it needs no admin rights, no Developer Mode and no Store. `scoop update`
+updates the package in place and keeps your settings; `scoop uninstall cmdpal-shortcuts`
+removes it.
+
 ## Choosing your folders
 
 After installing, open Command Palette and type *Shortcuts*. This always finds "Shortcuts:
@@ -123,7 +135,7 @@ request gets no CI checks, because it is opened with `GITHUB_TOKEN`.
 The bundle that the release job attaches is unsigned. The Store re-signs the package with a
 Microsoft certificate that every Windows trusts, and that signature stays valid outside the
 Store. `scripts/publish-store-bundle.ps1` puts the Store-signed bundle on the GitHub release
-and in WinGet, so that machines without the Store can install it ([CPS-019](docs/backlog/cps-019.md)).
+and into the scoop and WinGet manifests, so that machines without the Store can install it ([CPS-019](docs/backlog/cps-019.md)).
 It is a copy of `scripts/publish-msstore-msix.ps1` from
 [8LWXpg/CmdPal-ProcessKiller](https://github.com/8LWXpg/CmdPal-ProcessKiller), with a check
 added before anything is published.
@@ -163,7 +175,11 @@ What it does, in order:
    certified the release, it still serves the previous version, and the script stops with
    "Try again once the Store has certified".
 5. **Publish.** `gh release upload --clobber` attaches the bundle to the release, and replaces
-   an asset of the same name, so a second run does no harm. Then `komac update` reads the
+   an asset of the same name, so a second run does no harm. It writes the version, the asset's
+   URL and the bundle's SHA-256 into the scoop manifest `bucket/cmdpal-shortcuts.json`; commit
+   and push that change, since scoop users get the new version from the bucket's default
+   branch. Scoop's own `checkver` would see the release before the bundle is on it. Then
+   `komac update` reads the
    asset's URL, computes the hashes, writes the new manifest and opens a pull request in
    `microsoft/winget-pkgs`. komac does not use the login of `gh`: the script hands it the
    token of `gh auth token` as `GITHUB_TOKEN`, unless `GITHUB_TOKEN` is already set.

@@ -1,5 +1,5 @@
-# Attaches the Store-signed bundle to the latest GitHub release and updates the WinGet manifest
-# (Windows, PowerShell 7, gh, komac). Run by hand once the Store has certified the release.
+# Attaches the Store-signed bundle to the latest GitHub release and updates the scoop and WinGet
+# manifests (Windows, PowerShell 7, gh, komac). Run by hand once the Store has certified the release.
 # Based on scripts/publish-msstore-msix.ps1 of 8LWXpg/CmdPal-ProcessKiller (MIT, see
 # THIRD-PARTY-NOTICES.md); this copy adds the check of signer and version before the upload.
 # Usage: ./scripts/publish-store-bundle.ps1 [-WhatIf]
@@ -63,6 +63,17 @@ if ($PSCmdlet.ShouldProcess($tag, "Upload $fileName")) {
     if ($LASTEXITCODE -ne 0) {
         throw 'gh release upload failed.'
     }
+}
+
+$bucketManifest = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..' 'bucket' 'cmdpal-shortcuts.json'))
+if ($PSCmdlet.ShouldProcess($bucketManifest, "Set version $version")) {
+    $scoop = Get-Content -Raw $bucketManifest | ConvertFrom-Json
+    $scoop.version = $version
+    $scoop.url = "https://github.com/$Repo/releases/download/$tag/$fileName"
+    $scoop.hash = (Get-FileHash $outFile -Algorithm SHA256).Hash.ToLowerInvariant()
+    # LF and a final newline, as the file is committed.
+    [System.IO.File]::WriteAllText($bucketManifest, (($scoop | ConvertTo-Json -Depth 5) -replace "`r`n", "`n") + "`n")
+    Write-Host "Updated $bucketManifest; commit and push it so that scoop users get $version."
 }
 
 if ($PSCmdlet.ShouldProcess($PackageIdentifier, "komac update $version")) {

@@ -10,6 +10,7 @@
 ## Table of Contents
 
 ### Open
+- [CPS-021 — The build script's tests fail on Windows when they run under build.cs check](cps-021.md)
 - [CPS-018 — A release publishes the update to the Microsoft Store](cps-018.md)
 - [CPS-017 — Folders can be excluded in the settings](cps-017.md)
 - [CPS-016 — The subtitle shows the file's full path](cps-016.md)

@@ -24,11 +24,11 @@
 - [CPS-008 — Requirements and traceability with sphinx-needs, sphinx-codelinks and ubCode](cps-008.md)
 
 ### In Progress
-- [CPS-020 — The watcher's burst test does not fail on a slow CI runner](cps-020.md)
 - [CPS-019 — A release puts the Store-signed bundle on GitHub and in WinGet](cps-019.md)
 - [CPS-001 — Backlog refinement](cps-001.md)
 
 ### Done
+- [CPS-020 — The watcher's burst test does not fail on a slow CI runner](cps-020.md)
 - [CPS-013 — One build harness for gate, CI and UAT, with badges in the README](cps-013.md)
 - [CPS-012 — A script's earlier arguments are offered again](cps-012.md)
 - [CPS-011 — A new user sees how to choose folders when the catalogue is empty](cps-011.md)

@@ -24,7 +24,7 @@
 
 ### In Progress
 - [CPS-019 — A release puts the Store-signed bundle on GitHub and in WinGet](cps-019.md)
-- [CPS-016 — The subtitle shows the file's full path](cps-016.md)
+- [CPS-016 — The title shows the file's extension](cps-016.md)
 - [CPS-001 — Backlog refinement](cps-001.md)
 
 ### Done

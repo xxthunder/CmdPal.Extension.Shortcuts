@@ -104,7 +104,7 @@ public sealed class ShortcutsCommandsProviderTests : IDisposable
         form.SubmitForm(Json(newPattern, ".cmd"), "");
 
         var item = Assert.Single(Listed(provider));
-        Assert.Equal("two", item.Title);
+        Assert.Equal("two.cmd", item.Title);
         Assert.Equal(1, raised);
         Assert.Contains(JsonSerializer.Serialize(newPattern).Trim('"'), File.ReadAllText(file));
     }
@@ -144,12 +144,12 @@ public sealed class ShortcutsCommandsProviderTests : IDisposable
     }
 
     [Fact]
-    public void TopLevelCommands_ItemShowsNameFolderAndFileIcon()
+    public void TopLevelCommands_ItemShowsFileNameFolderAndFileIcon()
     {
         Touch("a.cmd");
         var file = Touch("sub", "b.cmd");
 
-        var item = Assert.Single(Items(P("**")), i => i.Title == "b");
+        var item = Assert.Single(Items(P("**")), i => i.Title == "b.cmd");
 
         Assert.Equal(P("sub"), item.Subtitle);
         Assert.Equal(file, item.Icon.Light.Icon);
@@ -259,7 +259,7 @@ public sealed class ShortcutsCommandsProviderTests : IDisposable
 
         Touch("new.cmd");
 
-        var appeared = await EventuallyAsync(() => Listed(provider).Any(i => i.Title == "new"));
+        var appeared = await EventuallyAsync(() => Listed(provider).Any(i => i.Title == "new.cmd"));
         Assert.True(appeared, "new.cmd did not appear within 5 s");
         Assert.True(await EventuallyAsync(() => Volatile.Read(ref raised) >= 1), "ItemsChanged was not raised within 5 s");
     }
@@ -272,11 +272,11 @@ public sealed class ShortcutsCommandsProviderTests : IDisposable
             Manager(P("**")),
             history: NewHistory(),
             rebuildQuiet: TimeSpan.FromMilliseconds(50));
-        Assert.Contains(Listed(provider), i => i.Title == "old");
+        Assert.Contains(Listed(provider), i => i.Title == "old.cmd");
 
         File.Delete(old);
 
-        var gone = await EventuallyAsync(() => Listed(provider).All(i => i.Title != "old"));
+        var gone = await EventuallyAsync(() => Listed(provider).All(i => i.Title != "old.cmd"));
         Assert.True(gone, "old.cmd was still listed after 5 s");
     }
 
@@ -341,7 +341,7 @@ public sealed class ShortcutsCommandsProviderTests : IDisposable
 
         var items = provider.TopLevelCommands();
 
-        Assert.Equal(["a", SettingsTitle], items.Select(i => i.Title).ToArray());
+        Assert.Equal(["a.cmd", SettingsTitle], items.Select(i => i.Title).ToArray());
         AssertOpensTheSettings(provider, items[^1]);
     }
 
@@ -374,8 +374,8 @@ public sealed class ShortcutsCommandsProviderTests : IDisposable
 
         Touch("empty", "a.cmd");
 
-        var listed = await EventuallyAsync(() => Listed(provider).Select(i => i.Title).SequenceEqual(["a"]));
-        Assert.True(listed, "the list was not just 'a' within 5 s");
+        var listed = await EventuallyAsync(() => Listed(provider).Select(i => i.Title).SequenceEqual(["a.cmd"]));
+        Assert.True(listed, "the list was not just a.cmd within 5 s");
     }
 
     [Fact]
@@ -388,7 +388,7 @@ public sealed class ShortcutsCommandsProviderTests : IDisposable
         offer.Invoke(null!);
 
         var listed = await EventuallyAsync(() =>
-            Listed(provider).Select(i => i.Title).SequenceEqual(["Hello", "Hello", "Open shortcuts folder"]));
+            Listed(provider).Select(i => i.Title).SequenceEqual(["Hello.cmd", "Hello.ps1", "Open shortcuts folder.lnk"]));
         Assert.True(listed, "the example entries did not appear within 5 s");
         Assert.True(File.Exists(Path.Combine(folder, ExampleFolder.HelloCmd)));
         Assert.True(File.Exists(Path.Combine(folder, ExampleFolder.HelloPs1)));

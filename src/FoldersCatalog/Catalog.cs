@@ -46,8 +46,7 @@ public static class Catalog
             var fileName = Path.GetFileName(file);
             if (wanted.Contains(Path.GetExtension(fileName)) && listed.Add(Path.Combine(real, fileName)))
             {
-                var name = Path.GetFileNameWithoutExtension(fileName);
-                entries.Add(new CatalogEntry(file, name.Length == 0 ? fileName : name, dir));
+                entries.Add(new CatalogEntry(file, fileName, dir));
             }
         }
 

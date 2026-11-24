@@ -197,6 +197,18 @@ the check makes sure that it never publishes a wrong file.
 
 ## UAT and trying a development build
 
+Uninstall an installed release first: Windows does not register a development build over the
+Store-signed package of the same name, and `uat.ps1` then fails in `Add-AppxPackage` with
+`0x80073CF9` ("Rejecting a request to register from AppxBundleManifest.xml because the manifest
+is not in the package root"). Installed with Scoop:
+
+```powershell
+scoop uninstall cmdpal-shortcuts
+```
+
+Installed from the Store: `Get-AppxPackage karnomag.ShortcutsforCommandPalette | Remove-AppxPackage`.
+After the UAT, remove the development build (see below) and install the release again.
+
 On Windows, in PowerShell 7, check out the branch (or pull request) and deploy it:
 
 ```powershell

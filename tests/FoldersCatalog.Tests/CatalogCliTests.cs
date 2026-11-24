@@ -28,8 +28,8 @@ public sealed class CatalogCliTests : IDisposable
 
     private string[] TwoEntryLines() =>
     [
-        $"a\t{_root}\t{P("a.cmd")}",
-        $"b\t{P("sub")}\t{P("sub", "b.cmd")}",
+        $"a.cmd\t{_root}\t{P("a.cmd")}",
+        $"b.cmd\t{P("sub")}\t{P("sub", "b.cmd")}",
         "2 entries",
     ];
 

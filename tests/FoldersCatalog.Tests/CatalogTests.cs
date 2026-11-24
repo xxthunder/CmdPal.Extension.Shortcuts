@@ -62,15 +62,39 @@ public sealed class CatalogTests : IDisposable
     }
 
     [Fact]
-    public void Build_Entry_HasNameWithoutExtensionAndFolder()
+    public void Build_Entry_HasNameWithExtensionAndFolder()
     {
         Touch("root", "sub", "b.cmd");
 
         var entry = Assert.Single(Catalog.Build([P("root") + "/**"], Cmd));
 
-        Assert.Equal("b", entry.Name);
+        Assert.Equal("b.cmd", entry.Name);
         Assert.Equal(P("root", "sub"), entry.Folder);
         Assert.Equal(P("root", "sub", "b.cmd"), entry.FullPath);
+    }
+
+    [Fact]
+    public void Build_ScriptAndWrapperInOneFolder_NamesDiffer()
+    {
+        Touch("root", "wsl-manager.ps1");
+        Touch("root", "wsl-manager.bat");
+
+        var entries = Catalog.Build([P("root")], [".ps1", ".bat"]);
+
+        Assert.Equal(2, entries.Count);
+        Assert.Equal(["wsl-manager.bat", "wsl-manager.ps1"], entries.Select(e => e.Name).OrderBy(n => n, StringComparer.Ordinal).ToArray());
+        Assert.All(entries, e => Assert.Equal(P("root"), e.Folder));
+    }
+
+    [Fact]
+    public void Build_Name_KeepsEveryDotAndTheCase()
+    {
+        Touch("root", "backup.tar.ps1");
+        Touch("root", "Run.PS1");
+
+        var entries = Catalog.Build([P("root")], [".ps1"]);
+
+        Assert.Equal(["Run.PS1", "backup.tar.ps1"], entries.Select(e => e.Name).OrderBy(n => n, StringComparer.Ordinal).ToArray());
     }
 
     [Fact]
@@ -246,8 +270,8 @@ public sealed class CatalogTests : IDisposable
         var entries = Catalog.Build([Path.Combine(P("alias", "root"), "**")], Cmd);
 
         Assert.Equal(2, entries.Count);
-        Assert.Single(entries, e => e.Name == "a");
-        Assert.Single(entries, e => e.Name == "b");
+        Assert.Single(entries, e => e.Name == "a.cmd");
+        Assert.Single(entries, e => e.Name == "b.cmd");
     }
 
     [Fact]
@@ -261,8 +285,8 @@ public sealed class CatalogTests : IDisposable
         var entries = Catalog.Build([Path.Combine(P("real", "root"), "**")], Cmd);
 
         Assert.Equal(2, entries.Count);
-        Assert.Single(entries, e => e.Name == "a");
-        Assert.Single(entries, e => e.Name == "b");
+        Assert.Single(entries, e => e.Name == "a.cmd");
+        Assert.Single(entries, e => e.Name == "b.cmd");
     }
 
     [Fact]
@@ -273,7 +297,7 @@ public sealed class CatalogTests : IDisposable
 
         var entries = Catalog.Build([P("root") + "/**"], Cmd);
 
-        Assert.Single(entries, e => e.Name == "b");
+        Assert.Single(entries, e => e.Name == "b.cmd");
         Assert.Single(entries);
     }
 

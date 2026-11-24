@@ -39,3 +39,48 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ needs.release-please.outputs.tag_name }}
+
+  store:
+    needs: [release-please, bundle]
+    if: needs.release-please.outputs.release_created
+    runs-on: windows-latest
+    permissions:
+      contents: read
+    steps:
+      - run: gh release download "$env:TAG" --repo "$env:GITHUB_REPOSITORY" --pattern "*.msixbundle" --dir store
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.release-please.outputs.tag_name }}
+      - uses: microsoft/microsoft-store-apppublisher@v1.4
+      - name: Configure the Store CLI
+        shell: pwsh
+        env:
+          MSSTORE_TENANT_ID: ${{ secrets.MSSTORE_TENANT_ID }}
+          MSSTORE_SELLER_ID: ${{ secrets.MSSTORE_SELLER_ID }}
+          MSSTORE_CLIENT_ID: ${{ secrets.MSSTORE_CLIENT_ID }}
+          MSSTORE_CLIENT_SECRET: ${{ secrets.MSSTORE_CLIENT_SECRET }}
+        run: |
+          foreach ($name in 'MSSTORE_TENANT_ID', 'MSSTORE_SELLER_ID', 'MSSTORE_CLIENT_ID', 'MSSTORE_CLIENT_SECRET') {
+            if ([string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($name))) {
+              throw "$name is not set; see README, Publishing to the Microsoft Store"
+            }
+          }
+          msstore reconfigure --tenantId $env:MSSTORE_TENANT_ID --sellerId $env:MSSTORE_SELLER_ID --clientId $env:MSSTORE_CLIENT_ID --clientSecret $env:MSSTORE_CLIENT_SECRET
+          if ($LASTEXITCODE -ne 0) { throw "msstore reconfigure failed ($LASTEXITCODE)" }
+      - name: Publish to the Store
+        shell: pwsh
+        env:
+          TAG: ${{ needs.release-please.outputs.tag_name }}
+          STORE_NO_COMMIT: ${{ vars.STORE_NO_COMMIT }}
+        run: |
+          $bundles = @(Get-ChildItem store -File -Filter *.msixbundle)
+          if ($bundles.Count -ne 1) { throw "Expected exactly one .msixbundle on $env:TAG; found $($bundles.Count)" }
+          $storeArgs = @('publish', $bundles[0].FullName, '--appId', '9NN0F5R302LZ')
+          if ($env:STORE_NO_COMMIT -eq 'false') {
+            Write-Host "Submitting $($bundles[0].Name) to the Store"
+          } else {
+            $storeArgs += '--noCommit'
+            Write-Host 'Leaving a draft, STORE_NO_COMMIT is not false'
+          }
+          msstore @storeArgs
+          if ($LASTEXITCODE -ne 0) { throw "msstore publish failed ($LASTEXITCODE)" }

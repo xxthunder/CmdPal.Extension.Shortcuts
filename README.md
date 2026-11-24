@@ -127,9 +127,76 @@ dotnet run build.cs -- bundle
 ```
 
 Releases: release-please keeps a release pull request open; merging it tags the version, and
-the release job attaches the `.msixbundle` to the GitHub release. The repository setting
-"Allow GitHub Actions to create and approve pull requests" must be on. The release pull
+the release job attaches the `.msixbundle` to the GitHub release, and a `store` job then
+submits it to the Microsoft Store
+([Publishing to the Microsoft Store](#publishing-to-the-microsoft-store)). The repository
+setting "Allow GitHub Actions to create and approve pull requests" must be on. The release pull
 request gets no CI checks, because it is opened with `GITHUB_TOKEN`.
+
+## Publishing to the Microsoft Store
+
+After `bundle`, the `store` job of `.github/workflows/release.yml` downloads the bundle from the
+GitHub release and runs `msstore publish` for the product `9NN0F5R302LZ` ([CPS-018](docs/backlog/cps-018.md)).
+The first publication was by hand ([CPS-010](docs/backlog/cps-010.md)); the job updates an
+existing free app and does nothing else with the Store listing.
+
+**One-time setup**
+
+1. Associate the Partner Center account with a Microsoft Entra ID tenant; see
+   <https://learn.microsoft.com/en-us/windows/apps/publish/store-submission-api>.
+2. In Partner Center, Account settings → Users, add an Entra application and give it the
+   Manager role. Click the application's name there and copy its Tenant ID and Client ID.
+3. In the Azure portal, Microsoft Entra ID → App registrations → the app → Certificates &
+   secrets → Client secrets → New client secret. The lifetime is at most 24 months; Microsoft
+   recommends less than 12. The value is shown only once; note the expiry date.
+4. Read the Seller ID in Partner Center, Account settings → Identifiers (the msstore docs call
+   it "Publisher ID" or "Seller ID").
+5. Store the four values as repository secrets; each command asks for the value:
+
+```
+gh secret set MSSTORE_TENANT_ID
+gh secret set MSSTORE_SELLER_ID
+gh secret set MSSTORE_CLIENT_ID
+gh secret set MSSTORE_CLIENT_SECRET
+```
+
+A missing secret fails the job with `<NAME> is not set; see README, Publishing to the Microsoft
+Store`.
+
+**Draft or submit**
+
+The job leaves a draft submission, unless the repository variable `STORE_NO_COMMIT` is `false`.
+Unset, or any other value, means a draft. For the first release: check the draft in Partner
+Center and submit it there; then let later releases submit themselves:
+
+```
+gh variable set STORE_NO_COMMIT --body false
+```
+
+Back to drafts: `gh variable set STORE_NO_COMMIT --body true`.
+
+The next release replaces a draft that was not submitted. While a submission is still in
+certification, `msstore publish` cannot replace it and the `store` job fails; run the failed job
+again once certification is done (command under "Renewing the client secret").
+
+**Renewing the client secret**
+
+Before the expiry date, create a new client secret at the same place in the Azure portal, store
+it with the command below, then delete the old secret in the Azure portal:
+
+```
+gh secret set MSSTORE_CLIENT_SECRET
+```
+
+An expired secret fails the `store` job at the msstore step with the Entra ID error
+`AADSTS7000222` ("The provided client secret keys are expired"). The release is then on GitHub
+but not in the Store. After renewing the secret, run the failed job again:
+
+```
+gh run rerun <run-id> --failed
+```
+
+`<run-id>` is the run ID from `gh run list --workflow release.yml`.
 
 ## Publishing the Store-signed bundle
 

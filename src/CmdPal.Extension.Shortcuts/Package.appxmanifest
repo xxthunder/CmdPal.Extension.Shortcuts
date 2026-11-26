@@ -11,7 +11,7 @@
   <Identity
     Name="karnomag.ShortcutsforCommandPalette"
     Publisher="CN=EB467DD7-FED1-4C41-A876-46255255EB4A"
-    Version="1.0.0.0" /> <!-- x-release-please-version -->
+    Version="1.1.0.0" /> <!-- x-release-please-version -->
 
   <Properties>
     <DisplayName>Shortcuts for Command Palette</DisplayName>

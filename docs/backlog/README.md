@@ -10,6 +10,7 @@
 ## Table of Contents
 
 ### Open
+- [CPS-022 — A failed script keeps its window open](cps-022.md)
 - [CPS-021 — The build script's tests fail on Windows when they run under build.cs check](cps-021.md)
 - [CPS-017 — Folders can be excluded in the settings](cps-017.md)
 - [CPS-015 — The logo test does not fail on a locked temp file on Windows](cps-015.md)
